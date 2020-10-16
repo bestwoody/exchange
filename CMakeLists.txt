@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.17)
 project(Exchange)
 
 if(NOT MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 else()
     add_definitions(-D_WIN32_WINNT=0x600)
 endif()
@@ -34,10 +34,9 @@ else()
     set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:gRPC::grpc_cpp_plugin>)
 endif()
 
-include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-add_executable(receiver exchange_receiver.cpp exchange.h exchange.pb.h exchange.grpc.pb.h exchange.pb.cc exchange.grpc.pb.cc)
-target_link_libraries(receiver ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
+add_executable(receiver exchange_receiver.cpp exchange.h exchange.grpc.pb.cc exchange.pb.cc)
+target_link_libraries(receiver ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${OPENSSL_LIBRARIES})
 
-add_executable(sender exchange_sender.cpp exchange.h exchange.pb.h exchange.grpc.pb.h exchange.pb.cc exchange.grpc.pb.cc)
-target_link_libraries(sender ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
+add_executable(sender exchange_sender.cpp exchange.h exchange.grpc.pb.cc exchange.pb.cc)
+target_link_libraries(sender ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${OPENSSL_LIBRARIES})

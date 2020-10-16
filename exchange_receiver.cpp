@@ -86,7 +86,7 @@ private:
 
                 // process received chunks
                 cout<<"receive a chunk: "<< chunk_.chunk_id()<< endl;
-                if (times_> LIMIT)
+                if (times_>= LIMIT)
                 {
                     state_ = FINISH;
                     reply_.set_received_chunks(times_);

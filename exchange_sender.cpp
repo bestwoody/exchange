@@ -78,6 +78,7 @@ public:
                     call->request->set_chunk_id(call->times);
                     call->writer->Write(*call->request,(void*)call);
                     call->state_type = AsyncClientCall::TOREAD;
+                    std::cout<< " send chunk id = "  << call->request->chunk_id() << std::endl;
                 }break;
                 case AsyncClientCall::TOREAD: {
                     call->times++;
@@ -87,6 +88,7 @@ public:
                     }else {
                         call->request->set_chunk_id(call->times);
                         call->writer->Write(*call->request,(void*)call);
+                        std::cout<< " send chunk id = "  << call->request->chunk_id() << std::endl;
                     }
                 }break;
                 case AsyncClientCall::DONE: {
