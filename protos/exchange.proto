@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.exchange";
+option java_outer_classname = "ExchangeProto";
+option objc_class_prefix = "Xchg";
+
+package exchange;
+
+service ExchangeService {
+  rpc ExchangeData(stream ReqChunk) returns (ReplySummary) {}
+}
+
+// A helper to stand for void.
+message ReplySummary {
+  int64 received_chunks=1;
+}
+
+// Chunk contains multiple rows data and rows meta.
+message ReqChunk {
+  repeated uint64 id = 1;
+  repeated string name=2;
+  repeated double score = 3;
+  repeated string comment = 4;
+  int32 num = 5;
+  uint64 chunk_id=6;
+}
+

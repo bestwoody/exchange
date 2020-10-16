@@ -1,0 +1,11 @@
+*.o
+exchange_sender
+exchange_receiver
+.data
+.test
+*.pb.cc
+*.pb.h
+
+cmake-build-debug
+.idea
+build
