@@ -1,60 +1,43 @@
-//
-// Created by fangzhuhe on 2020/10/12.
-//
 
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
+
 #include <grpcpp/grpcpp.h>
 #include <grpc/support/log.h>
 #include <thread>
+
 #include "exchange.grpc.pb.h"
-#include "exchange.h"
+
 
 using std::vector;
-using std::string;
 using grpc::Channel;
 using grpc::ClientAsyncReader;
 using grpc::ClientAsyncWriter;
 using grpc::ClientContext;
 using grpc::CompletionQueue;
 using grpc::Status;
-using namespace exchange;
-
-ReqChunk* GenChunk(int num) {
-    //num = rand() % 10000;
-    if(num < 1) {
-        num = 1024;
-    }
-    ReqChunk* chk = new ReqChunk;
-    chk->set_num(num);
-    for(auto j=0; j< num; ++j) {
-        chk->add_id(j);
-        chk->add_name("abc");
-        chk->add_score(rand()*1.0);
-        chk->add_comment("abcaserfewqradf   adfawewerfasdgffasdfopi[15979841616dasfgdldkfgnvn k zsfgdzff454saf+89g165dvb");
-    }
-    return chk;
-}
+using exchange::ExchangeService;
+using exchange::ReqChunk;
+using exchange::Empty;
 
 
 class GreeterClient {
 public:
-    explicit GreeterClient(std::shared_ptr<Channel> channel,CompletionQueue*cq, int id)
+    explicit GreeterClient(std::shared_ptr<Channel> channel,CompletionQueue* cq,int id)
             : stub_(ExchangeService::NewStub(channel)),cq_(cq),client_id_(id) {}
 
     // Assembles the client's payload and sends it to the server.
-    void SendData(string msg)
+    void SayHello(const std::string& user, const int num_greetings)
     {
         // Call object to store rpc data
         AsyncClientCall* call = new AsyncClientCall;
-        call->request= GenChunk(0);
-        call->times= 0;
-        call->writer = stub_->AsyncExchangeData(&call->context, &call->reply ,cq_,(void*)call);
+        call->request.set_name(user);
+        call->reader = stub_->AsyncExchangeDataRet(&call->context, call->request ,cq_,(void*)call);
         call->state_type = AsyncClientCall::CONNECTED;
-        call->client_id= this->client_id_;
-        std::cout<<msg<<" begin to send data!!"<<std::endl;
+        call->times= 0;
+        call->client_id = this->client_id_;
     }
 
     // Loop while listening for completed responses.
@@ -75,24 +58,17 @@ public:
             }
             switch (call->state_type) {
                 case AsyncClientCall::CONNECTED: {
-                    call->request->set_chunk_id(call->times);
-                    call->writer->Write(*call->request,(void*)call);
+                    std::cout << call->request.name() <<" begin to read "<< std::endl;
+                    call->reader->Read(&call->reply,(void*)call);
                     call->state_type = AsyncClientCall::TOREAD;
-                    std::cout<< " send chunk id = "  << call->request->chunk_id() << std::endl;
                 }break;
                 case AsyncClientCall::TOREAD: {
                     call->times++;
-                    if(call->times >= LIMIT) {
-                        call->writer->Finish(&call->status,call);
-                        call->state_type = AsyncClientCall::DONE;
-                    }else {
-                        call->request->set_chunk_id(call->times);
-                        call->writer->Write(*call->request,(void*)call);
-                        std::cout<< " send chunk id = "  << call->request->chunk_id() << std::endl;
-                    }
+                    std::cout << "read a chunk "<< call->reply.chunk_id() <<std::endl;
+                    call->reader->Read(&call->reply,(void*)call);
                 }break;
                 case AsyncClientCall::DONE: {
-                    std::cout<<" send data "<< call->times<<" Done!"<<std::endl;
+                    std::cout << call->request.name() <<" done "<< std::endl;
                     delete call;
                 }
             }
@@ -104,8 +80,8 @@ private:
     // struct for keeping state and data information
     struct AsyncClientCall {
         // Container for the data we expect from the server.
-        ReplySummary reply;
-        ReqChunk* request;
+        ReqChunk reply;
+        Empty request;
         // Context for the client. It could be used to convey extra information to
         // the server and/or tweak certain RPC behaviors.
         ClientContext context;
@@ -113,7 +89,7 @@ private:
         // Storage for the status of the RPC upon completion.
         Status status;
 
-        std::unique_ptr<ClientAsyncWriter<ReqChunk> > writer;
+        std::unique_ptr<ClientAsyncReader<ReqChunk> > reader;
         enum StateType {CONNECTED,TOREAD,DONE};
         StateType state_type;
         std::atomic_int times;
@@ -126,6 +102,7 @@ private:
 
     // The producer-consumer queue we use to communicate asynchronously with the
     // gRPC runtime.
+
     CompletionQueue* cq_;
     int client_id_;
 };
@@ -144,9 +121,10 @@ int main(int argc, char** argv) {
     // Spawn reader thread that loops indefinitely
     std::thread thread_ = std::thread(&GreeterClient::AsyncCompleteRpc, clients[0]);
 
-    for (int i = 5; i <= req_num; i++) {
+    for (int i = 1; i <= req_num; i++) {
         for(int j=0;j<client_num;++j) {
-            clients[j]->SendData("Send data Req id = " + std::to_string(i) + " client id = " + std::to_string(j));
+            std::string user("world req id = " + std::to_string(i) + " client id = " + std::to_string(j));
+            clients[j]->SayHello(user,i);  // The actual RPC call!
         }
     }
 

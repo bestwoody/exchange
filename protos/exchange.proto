@@ -9,6 +9,11 @@ package exchange;
 
 service ExchangeService {
   rpc ExchangeData(stream ReqChunk) returns (ReplySummary) {}
+  rpc ExchangeDataRet(Empty) returns (stream ReqChunk) {}
+}
+
+message Empty{
+  string name=1;
 }
 
 // A helper to stand for void.

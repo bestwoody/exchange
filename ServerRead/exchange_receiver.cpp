@@ -12,7 +12,7 @@
 #include <grpc/support/log.h>
 
 #include "exchange.grpc.pb.h"
-#include "exchange.h"
+#include "../exchange.h"
 
 using std::string;
 using grpc::Server;
