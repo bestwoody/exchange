@@ -22,7 +22,7 @@ using exchange::Empty;
 
 ReqChunk* GenChunk(int num) {
     if(num < 1) {
-        num = 1024;
+        num = CHUNK_NUM;
     }
     ReqChunk* chk = new ReqChunk;
     chk->set_num(num);
