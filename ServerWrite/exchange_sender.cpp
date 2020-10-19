@@ -12,6 +12,7 @@
 
 
 using std::vector;
+using std::string;
 using grpc::Channel;
 using grpc::ClientAsyncReader;
 using grpc::ClientAsyncWriter;
@@ -25,7 +26,7 @@ using exchange::Empty;
 
 class GreeterClient {
 public:
-    explicit GreeterClient(std::shared_ptr<Channel> channel,CompletionQueue* cq,int id)
+    explicit GreeterClient(std::shared_ptr<Channel> channel,CompletionQueue* cq,string id)
             : stub_(ExchangeService::NewStub(channel)),cq_(cq),client_id_(id) {}
 
     // Assembles the client's payload and sends it to the server.
@@ -93,7 +94,7 @@ private:
         enum StateType {CONNECTED,TOREAD,DONE};
         StateType state_type;
         std::atomic_int times;
-        int client_id;
+        string client_id;
     };
 
     // Out of the passed in Channel comes the stub, stored here, our view of the
@@ -104,19 +105,30 @@ private:
     // gRPC runtime.
 
     CompletionQueue* cq_;
-    int client_id_;
+    string client_id_;
 };
+struct ServerAddr{
+    string ip;
+    string port;
+}addr[100];
 
 int main(int argc, char** argv) {
-
-    int client_num=3;
+    std::cout<<"./sender 'n servers' '1-th ip' '1-th port' ..."<<std::endl;
+    assert(argc>2);
+    int client_num=atoi(argv[1]);
+    assert(2*client_num+2==argc);
+    for(int i=0; i<client_num; ++i) {
+        addr[i].ip = argv[2*i+2];
+        addr[i].port = argv[2*i+3];
+    }
     int req_num=5;
     CompletionQueue cq;
     std::vector<GreeterClient*> clients;
     for (int i = 0; i< client_num; ++i) {
         clients.emplace_back(new GreeterClient(grpc::CreateChannel(
-                "localhost:5005"+std::to_string(i), grpc::InsecureChannelCredentials()),&cq,i));
+                addr[i].ip+":"+addr[i].port, grpc::InsecureChannelCredentials()),&cq,addr[i].ip+":"+addr[i].port+":"+std::to_string(i)));
     }
+
 
     // Spawn reader thread that loops indefinitely
     std::thread thread_ = std::thread(&GreeterClient::AsyncCompleteRpc, clients[0]);

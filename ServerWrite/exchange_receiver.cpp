@@ -44,9 +44,9 @@ public:
         cq_->Shutdown();
     }
 
-    void Run(string port)
+    void Run(string ip, string port)
     {
-        std::string server_address("0.0.0.0:"+port);
+        std::string server_address(ip+":"+port);
 
         ServerBuilder builder;
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
@@ -156,9 +156,10 @@ private:
 
 int main(int argc, char** argv)
 {
+    std::cout<<"input 'server ip' 'server port'"<<std::endl;
     ServerImpl server;
-    assert(argc==2);
-    server.Run((argv[1]));
+    assert(argc==3);
+    server.Run(argv[1], argv[2]);
 
     return 0;
 }
