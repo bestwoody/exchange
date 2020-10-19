@@ -91,19 +91,27 @@ private:
                 if (times_ == 0)
                 {
                     new CallData(service_, cq_);
+#ifdef DEBUG_
                     std::cout<< "request: "<< request_.name() << std::endl;
+#endif
                 }
 
                 if (times_++ >= LIMIT)
                 {
                     status_ = FINISH;
-                    std::cout<< request_.name() <<"  "<< times_ <<" write finished!!" <<std::endl;
+                    std::cout<< request_.name()  <<" write finished!!" <<std::endl;
                     responder_.Finish(Status::OK, this);
                 }
                 else
                 {
-                    std::string prefix("Hello ");
                     chunk_->set_chunk_id(times_);
+#ifdef DEBUG_
+                    std::cout<< request_.name() <<"  "<< times_ <<" write a chunk." <<std::endl;
+#else
+                    if (times_ % MOD_LIMIT == 0) {
+                        std::cout<< request_.name() <<"  "<< times_ <<" write a chunk." <<std::endl;
+                    }
+#endif
                     responder_.Write(*chunk_, this);
                 }
             }

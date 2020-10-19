@@ -6,8 +6,6 @@
 #include <memory>
 #include <iostream>
 #include <string>
-#include <thread>
-
 #include <grpcpp/grpcpp.h>
 #include <grpc/support/log.h>
 
@@ -83,14 +81,19 @@ private:
                     times_++;
                     return;
                 }
-
+#ifdef DEBUG_
                 // process received chunks
                 cout<<"receive a chunk: "<< chunk_.chunk_id()<< endl;
+#else
+                if (chunk_.chunk_id() %MOD_LIMIT==0) {
+                    cout<<"receive a chunk: "<< chunk_.chunk_id()<< endl;
+                }
+#endif
                 if (times_>= LIMIT)
                 {
                     state_ = FINISH;
                     reply_.set_received_chunks(times_);
-                    std::cout<<"read finish!!!"<< std::endl;
+                    std::cout<<times_<<" read finish!!!"<< std::endl;
                     reader_.Finish(reply_,Status::OK, this);
                 }
                 else
@@ -102,7 +105,9 @@ private:
             }
             else
             {
+#ifdef DEBUG_
                 std::cout<<"delete this!!!"<< std::endl;
+#endif
                 GPR_ASSERT(state_ == FINISH);
                 delete this;
             }

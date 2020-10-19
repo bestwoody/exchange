@@ -3,13 +3,13 @@
 #include <memory>
 #include <string>
 #include <vector>
-
+#include <stdlib.h>
 #include <grpcpp/grpcpp.h>
 #include <grpc/support/log.h>
 #include <thread>
 
 #include "exchange.grpc.pb.h"
-
+#include "../exchange.h"
 
 using std::vector;
 using std::string;
@@ -51,7 +51,9 @@ public:
         while (cq_->Next(&got_tag, &ok)) {
             // The tag in this example is the memory location of the call object
             AsyncClientCall* call = static_cast<AsyncClientCall*>(got_tag);
+#ifdef DEBUG_
             std::cout<<"client id = "<< call->client_id<<" : ";
+#endif
             // Verify that the request was completed successfully. Note that "ok"
             // corresponds solely to the request for updates introduced by Finish().
             if(!ok) {
@@ -59,13 +61,21 @@ public:
             }
             switch (call->state_type) {
                 case AsyncClientCall::CONNECTED: {
+#ifdef DEBUG_
                     std::cout << call->request.name() <<" begin to read "<< std::endl;
+#endif
                     call->reader->Read(&call->reply,(void*)call);
                     call->state_type = AsyncClientCall::TOREAD;
                 }break;
                 case AsyncClientCall::TOREAD: {
                     call->times++;
+#ifdef DEBUG_
                     std::cout << "read a chunk "<< call->reply.chunk_id() <<std::endl;
+#else
+                    if (call->times% MOD_LIMIT == 0) {
+                        std::cout << "read a chunk "<< call->reply.chunk_id() <<std::endl;
+                    }
+#endif
                     call->reader->Read(&call->reply,(void*)call);
                 }break;
                 case AsyncClientCall::DONE: {
@@ -113,15 +123,15 @@ struct ServerAddr{
 }addr[100];
 
 int main(int argc, char** argv) {
-    std::cout<<"./sender 'n servers' '1-th ip' '1-th port' ..."<<std::endl;
+    std::cout<<"./sender 'n servers' '1-th ip' '1-th port' ... 'req num'"<<std::endl;
     assert(argc>2);
     int client_num=atoi(argv[1]);
-    assert(2*client_num+2==argc);
+    assert(2*client_num+3==argc);
     for(int i=0; i<client_num; ++i) {
         addr[i].ip = argv[2*i+2];
         addr[i].port = argv[2*i+3];
     }
-    int req_num=5;
+    int req_num=atoi(argv[argc-1]);
     CompletionQueue cq;
     std::vector<GreeterClient*> clients;
     for (int i = 0; i< client_num; ++i) {
@@ -133,9 +143,9 @@ int main(int argc, char** argv) {
     // Spawn reader thread that loops indefinitely
     std::thread thread_ = std::thread(&GreeterClient::AsyncCompleteRpc, clients[0]);
 
-    for (int i = 1; i <= req_num; i++) {
+    for (int i = 0; i < req_num; i++) {
         for(int j=0;j<client_num;++j) {
-            std::string user("world req id = " + std::to_string(i) + " client id = " + std::to_string(j));
+            std::string user("world req id = " + std::to_string(i) + " client id = " + addr[j].ip+":"+addr[j].port+":"+std::to_string(j));
             clients[j]->SayHello(user,i);  // The actual RPC call!
         }
     }

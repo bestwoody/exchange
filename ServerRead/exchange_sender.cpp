@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 #include <grpcpp/grpcpp.h>
-#include <grpc/support/log.h>
 #include <thread>
 #include <stdlib.h>
 #include "exchange.grpc.pb.h"
@@ -66,7 +65,9 @@ public:
         while (cq_->Next(&got_tag, &ok)) {
             // The tag in this example is the memory location of the call object
             AsyncClientCall* call = static_cast<AsyncClientCall*>(got_tag);
+#ifdef DEBUG_
             std::cout<<"client id = "<< call->client_id<<" : ";
+#endif
             // Verify that the request was completed successfully. Note that "ok"
             // corresponds solely to the request for updates introduced by Finish().
             if(!ok) {
@@ -77,7 +78,9 @@ public:
                     call->request->set_chunk_id(call->times);
                     call->writer->Write(*call->request,(void*)call);
                     call->state_type = AsyncClientCall::TOREAD;
+#ifdef DEBUG_
                     std::cout<< " send chunk id = "  << call->request->chunk_id() << std::endl;
+#endif
                 }break;
                 case AsyncClientCall::TOREAD: {
                     call->times++;
@@ -87,7 +90,14 @@ public:
                     }else {
                         call->request->set_chunk_id(call->times);
                         call->writer->Write(*call->request,(void*)call);
+#ifdef DEBUG_
                         std::cout<< " send chunk id = "  << call->request->chunk_id() << std::endl;
+#else
+                        if(call->request->chunk_id() % MOD_LIMIT == 0) {
+                            std::cout<<"client id = "<< call->client_id<<" ";
+                            std::cout<< " send chunk id = "  << call->request->chunk_id() << std::endl;
+                        }
+#endif
                     }
                 }break;
                 case AsyncClientCall::DONE: {
@@ -133,15 +143,16 @@ struct ServerAddr{
     string port;
 }addr[100];
 int main(int argc, char** argv) {
-    std::cout<<"./sender 'n servers' '1-th ip' '1-th port' ..."<<std::endl;
+    std::cout<<"./sender 'n servers' '1-th ip' '1-th port' ... 'req num'"<<std::endl;
     assert(argc>2);
     int client_num=atoi(argv[1]);
-    assert(2*client_num+2==argc);
+    assert(2*client_num+3==argc);
     for(int i=0; i<client_num; ++i) {
         addr[i].ip = argv[2*i+2];
         addr[i].port = argv[2*i+3];
     }
-    int req_num=5;
+    int req_num=atoi(argv[argc-1]);
+
     CompletionQueue cq;
     std::vector<GreeterClient*> clients;
     for (int i = 0; i< client_num; ++i) {
@@ -152,9 +163,9 @@ int main(int argc, char** argv) {
     // Spawn reader thread that loops indefinitely
     std::thread thread_ = std::thread(&GreeterClient::AsyncCompleteRpc, clients[0]);
 
-    for (int i = 5; i <= req_num; i++) {
+    for (int i = 0; i < req_num; i++) {
         for(int j=0;j<client_num;++j) {
-            clients[j]->SendData("Send data Req id = " + std::to_string(i) + " client id = " + std::to_string(j));
+            clients[j]->SendData("Send data Req id = " + std::to_string(i) + " client id = " + addr[j].ip+":"+addr[j].port+":"+std::to_string(j));
         }
     }
 
