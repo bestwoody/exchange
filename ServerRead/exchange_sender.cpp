@@ -22,7 +22,20 @@ using grpc::CompletionQueue;
 using grpc::Status;
 using namespace exchange;
 
-
+ReqChunk* GenChunk(int num) {
+    if(num < 1) {
+        num = 1024;
+    }
+    ReqChunk* chk = new ReqChunk;
+    chk->set_num(num);
+    for(auto j=0; j< num; ++j) {
+        chk->add_id(j);
+        chk->add_name("abc");
+        chk->add_score(rand()*1.0);
+        chk->add_comment("abcaserfewqradf   adfawewerfasdgffasdfopi[15979841616dasfgdldkfgnvn k zsfgdzff454saf+89g165dvb");
+    }
+    return chk;
+}
 
 class GreeterClient {
 public:

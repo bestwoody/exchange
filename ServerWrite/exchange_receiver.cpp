@@ -21,7 +21,6 @@ using exchange::ReqChunk;
 using exchange::Empty;
 
 ReqChunk* GenChunk(int num) {
-    //num = rand() % 10000;
     if(num < 1) {
         num = 1024;
     }
