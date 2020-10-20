@@ -8,7 +8,7 @@
 #include <string>
 #include <grpcpp/grpcpp.h>
 #include <grpc/support/log.h>
-
+#include <thread>
 #include "exchange.grpc.pb.h"
 #include "../exchange.h"
 
@@ -28,23 +28,38 @@ class ServerImpl final
 public:
     ~ServerImpl()
     {
+        for (int i = 0; i < THREAD_NUM; i++) {
+            cqs_[i]->Shutdown();
+        }
+        void* tag;
+        bool ok;
+        for (auto cq = cqs_.begin(); cq != cqs_.end(); ++cq) {
+            while ((*cq)->Next(&tag, &ok)) {
+                GPR_ASSERT(ok);
+                static_cast<CallData*>(tag)->Proceed();
+            }
+        }
         server_->Shutdown();
-        cq_->Shutdown();
     }
 
     void Run(string ip, string port)
     {
         std::string server_address(ip+":"+port);
-
         ServerBuilder builder;
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
         builder.RegisterService(&service_);
-
-        cq_ = builder.AddCompletionQueue();
+        for (int i = 0; i < THREAD_NUM; i++)
+            cqs_.emplace_back(builder.AddCompletionQueue());
         server_ = builder.BuildAndStart();
         std::cout << "Server listening on " << server_address << std::endl;
 
-        HandleRpcs();
+        for(auto i=0;i< THREAD_NUM; ++i) {
+            works.emplace_back(thread(&ServerImpl::HandleRpcs, this,i));
+        }
+        for(auto i=0;i<THREAD_NUM; ++i) {
+            works[i].join();
+            std::cout <<"Server "<< i <<" is done!"<< std::endl;
+        }
     }
 
 private:
@@ -65,8 +80,8 @@ private:
         {
             if (state_ == CREATE)
             {
-                state_ = PROCESS;
                 service_->RequestExchangeData(&ctx_,  &reader_, cq_, cq_, this);
+                state_ = PROCESS;
             }
             else if (state_ == PROCESS)
             {
@@ -132,22 +147,23 @@ private:
         CallStates state_; // The current serving state.
     };
 
-    void HandleRpcs()
+    void HandleRpcs(int id)
     {
-        new CallData(&service_, cq_.get());
+        new CallData(&service_, cqs_[id].get());
         void* tag; // uniquely identifies a request.
         bool ok;
         while (true)
         {
-            GPR_ASSERT(cq_->Next(&tag, &ok));
+            GPR_ASSERT(cqs_[id]->Next(&tag, &ok));
             GPR_ASSERT(ok);
             static_cast<CallData*>(tag)->Proceed();
         }
     }
 
-    std::unique_ptr<ServerCompletionQueue> cq_;
+    vector<std::unique_ptr<ServerCompletionQueue>> cqs_;
     ExchangeService::AsyncService service_;
     std::unique_ptr<Server> server_;
+    vector<std::thread> works;
 };
 
 int main(int argc, char** argv)
