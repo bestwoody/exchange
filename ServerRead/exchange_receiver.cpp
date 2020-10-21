@@ -28,7 +28,7 @@ class ServerImpl final
 public:
     ~ServerImpl()
     {
-        for (int i = 0; i < THREAD_NUM; i++) {
+        for (int i = 0; i < cqs_.size(); i++) {
             cqs_[i]->Shutdown();
         }
         void* tag;
@@ -42,21 +42,21 @@ public:
         server_->Shutdown();
     }
 
-    void Run(string ip, string port)
+    void Run(string ip, string port, int thread_num)
     {
         std::string server_address(ip+":"+port);
         ServerBuilder builder;
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
         builder.RegisterService(&service_);
-        for (int i = 0; i < THREAD_NUM; i++)
+        for (int i = 0; i < thread_num; i++)
             cqs_.emplace_back(builder.AddCompletionQueue());
         server_ = builder.BuildAndStart();
         std::cout << "Server listening on " << server_address << std::endl;
 
-        for(auto i=0;i< THREAD_NUM; ++i) {
+        for(auto i=0;i< thread_num; ++i) {
             works.emplace_back(thread(&ServerImpl::HandleRpcs, this,i));
         }
-        for(auto i=0;i<THREAD_NUM; ++i) {
+        for(auto i=0;i<thread_num; ++i) {
             works[i].join();
             std::cout <<"Server "<< i <<" is done!"<< std::endl;
         }
@@ -170,8 +170,8 @@ int main(int argc, char** argv)
 {
     std::cout<<"input 'server ip' 'server port'"<<std::endl;
     ServerImpl server;
-    assert(argc==3);
-    server.Run(argv[1], argv[2]);
+    assert(argc==4);
+    server.Run(argv[1], argv[2], atoi(argv[3]));
 
     return 0;
 }

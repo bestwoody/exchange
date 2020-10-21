@@ -20,7 +20,6 @@ using grpc::ClientAsyncWriter;
 using grpc::ClientContext;
 using grpc::CompletionQueue;
 using grpc::Status;
-using grpc::ChannelArguments;
 using namespace exchange;
 
 ReqChunk* GenChunk(int num) {
@@ -153,28 +152,33 @@ int main(int argc, char** argv) {
         addr[i].port = argv[2*i+3];
     }
     int req_num=atoi(argv[argc-1]);
+    vector<CompletionQueue*> cqs;
+    vector<std::thread>threads;
 
-    CompletionQueue cq;
-    std::vector<GreeterClient*> clients;
-    ChannelArguments args;
-    args.SetLoadBalancingPolicyName("round_robin");
-
-    for (int i = 0; i< client_num; ++i) {
-        clients.emplace_back(new GreeterClient(grpc::CreateCustomChannel(
-                addr[i].ip+":"+addr[i].port, grpc::InsecureChannelCredentials(),args),&cq,addr[i].ip+":"+addr[i].port+":"+std::to_string(i)));
+    for (auto i=0;i< client_num* req_num; ++i) {
+        cqs.emplace_back(new CompletionQueue);
     }
-
-    // Spawn reader thread that loops indefinitely
-    std::thread thread_ = std::thread(&GreeterClient::AsyncCompleteRpc, clients[0]);
-
-    for (int i = 0; i < req_num; i++) {
-        for(int j=0;j<client_num;++j) {
-            clients[j]->SendData("Send data Req id = " + std::to_string(i) + " client id = " + addr[j].ip+":"+addr[j].port+":"+std::to_string(j));
+    std::vector<GreeterClient*> clients;
+    for (int i = 0; i< client_num; ++i) {
+        for(int j=0; j< req_num; ++j) {
+            clients.emplace_back(new GreeterClient(grpc::CreateChannel(
+                    addr[i].ip+":"+addr[i].port, grpc::InsecureChannelCredentials()),cqs[i*req_num+j],addr[i].ip+":"+addr[i].port+":"+std::to_string(i)));
         }
     }
 
-    std::cout << "Press control-c to quit" << std::endl << std::endl;
-    thread_.join();  //blocks forever
+    // Spawn reader thread that loops indefinitely
+    for (auto i=0;i< client_num* req_num; ++i) {
+        threads.emplace_back(std::thread(&GreeterClient::AsyncCompleteRpc, clients[i]));
+    }
 
+    for (int i = 0; i< client_num ; i++) {
+        for(int j=0;j<req_num;++j) {
+            clients[i*req_num+j]->SendData("Send data Req id = " + std::to_string(j) + " client id = " + addr[i].ip+":"+addr[i].port+":"+std::to_string(j));
+        }
+    }
+    std::cout << "Press control-c to quit" << std::endl << std::endl;
+    for (auto i=0;i< client_num* req_num; ++i) {
+        threads[i].join();
+    }
     return 0;
 }
