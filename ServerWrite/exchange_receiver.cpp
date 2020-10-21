@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <vector>
 
 #include <grpcpp/grpcpp.h>
 #include <grpc/support/log.h>
@@ -19,6 +20,7 @@ using grpc::Status;
 using exchange::ExchangeService;
 using exchange::ReqChunk;
 using exchange::Empty;
+using namespace std;
 
 ReqChunk* GenChunk(int num) {
     if(num < 1) {
@@ -40,23 +42,37 @@ class ServerImpl final
 public:
     ~ServerImpl()
     {
+        for (int i = 0; i < cqs_.size(); i++) {
+            cqs_[i]->Shutdown();
+        }
+        void* tag;
+        bool ok;
+        for (auto cq = cqs_.begin(); cq != cqs_.end(); ++cq) {
+            while ((*cq)->Next(&tag, &ok)) {
+                GPR_ASSERT(ok);
+                static_cast<CallData*>(tag)->Proceed();
+            }
+        }
         server_->Shutdown();
-        cq_->Shutdown();
     }
 
-    void Run(string ip, string port)
+    void Run(string ip, string port, int thread_num)
     {
         std::string server_address(ip+":"+port);
-
         ServerBuilder builder;
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
         builder.RegisterService(&service_);
-
-        cq_ = builder.AddCompletionQueue();
+        for (int i = 0; i < thread_num; i++)
+            cqs_.emplace_back(builder.AddCompletionQueue());
         server_ = builder.BuildAndStart();
         std::cout << "Server listening on " << server_address << std::endl;
-
-        HandleRpcs();
+        for(auto i=0; i< thread_num;++i) {
+            works.emplace_back(thread(&ServerImpl::HandleRpcs, this, i));
+        }
+        for (int i = 0; i < thread_num; ++i) {
+            works[i].join();
+            std::cout <<"Server "<< i <<" is done!"<< std::endl;
+        }
     }
 
 private:
@@ -144,30 +160,32 @@ private:
     };
 
 
-    void HandleRpcs()
+    void HandleRpcs(int id)
     {
-        new CallData(&service_, cq_.get());
+        new CallData(&service_, cqs_[id].get());
         void* tag; // uniquely identifies a request.
         bool ok;
         while (true)
         {
-            GPR_ASSERT(cq_->Next(&tag, &ok));
+            GPR_ASSERT(cqs_[id]->Next(&tag, &ok));
             GPR_ASSERT(ok);
             static_cast<CallData*>(tag)->Proceed();
         }
     }
 
-    std::unique_ptr<ServerCompletionQueue> cq_;
+    vector<std::unique_ptr<ServerCompletionQueue> > cqs_;
     ExchangeService::AsyncService service_;
     std::unique_ptr<Server> server_;
+    vector<std::thread> works;
+
 };
 
 int main(int argc, char** argv)
 {
     std::cout<<"input 'server ip' 'server port'"<<std::endl;
     ServerImpl server;
-    assert(argc==3);
-    server.Run(argv[1], argv[2]);
+    assert(argc==4);
+    server.Run(argv[1], argv[2], atoi(argv[3]));
 
     return 0;
 }

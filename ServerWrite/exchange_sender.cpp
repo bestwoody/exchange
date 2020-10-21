@@ -132,26 +132,35 @@ int main(int argc, char** argv) {
         addr[i].port = argv[2*i+3];
     }
     int req_num=atoi(argv[argc-1]);
-    CompletionQueue cq;
+    vector<CompletionQueue*> cqs;
     std::vector<GreeterClient*> clients;
+    vector<std::thread>threads;
+
+    for (auto i=0;i < client_num; ++i) {
+        cqs.emplace_back(new CompletionQueue);
+    }
     for (int i = 0; i< client_num; ++i) {
         clients.emplace_back(new GreeterClient(grpc::CreateChannel(
-                addr[i].ip+":"+addr[i].port, grpc::InsecureChannelCredentials()),&cq,addr[i].ip+":"+addr[i].port+":"+std::to_string(i)));
+                addr[i].ip+":"+addr[i].port, grpc::InsecureChannelCredentials()),cqs[i],addr[i].ip+":"+addr[i].port+":"+std::to_string(i)));
     }
 
 
     // Spawn reader thread that loops indefinitely
-    std::thread thread_ = std::thread(&GreeterClient::AsyncCompleteRpc, clients[0]);
+    for (int i = 0; i < client_num; ++i) {
+        threads.emplace_back(std::thread(&GreeterClient::AsyncCompleteRpc, clients[0]));
+    }
 
-    for (int i = 0; i < req_num; i++) {
-        for(int j=0;j<client_num;++j) {
-            std::string user("world req id = " + std::to_string(i) + " client id = " + addr[j].ip+":"+addr[j].port+":"+std::to_string(j));
-            clients[j]->SayHello(user,i);  // The actual RPC call!
+    for (int i = 0; i < client_num; i++) {
+        for(int j=0; j < req_num;++j) {
+            std::string user("world req id = " + std::to_string(j) + " client id = " + addr[i].ip+":"+addr[i].port+":"+std::to_string(i));
+            clients[i]->SayHello(user,j);  // The actual RPC call!
         }
     }
 
     std::cout << "Press control-c to quit" << std::endl << std::endl;
-    thread_.join();  //blocks forever
+    for (int i = 0; i <client_num ; ++i) {
+        threads[i].join();
+    }  //blocks forever
 
     return 0;
 }
