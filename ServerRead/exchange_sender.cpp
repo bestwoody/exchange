@@ -154,7 +154,7 @@ int main(int argc, char** argv) {
     int req_num=atoi(argv[argc-1]);
     vector<CompletionQueue*> cqs;
     vector<std::thread>threads;
-
+#if 0
     for (auto i=0;i< client_num* req_num; ++i) {
         cqs.emplace_back(new CompletionQueue);
     }
@@ -180,5 +180,31 @@ int main(int argc, char** argv) {
     for (auto i=0;i< client_num* req_num; ++i) {
         threads[i].join();
     }
+#else
+    for (auto i=0;i < client_num; ++i) {
+        cqs.emplace_back(new CompletionQueue);
+    }
+    std::vector<GreeterClient*> clients;
+    for (int i = 0; i< client_num; ++i) {
+        clients.emplace_back(new GreeterClient(grpc::CreateChannel(
+                    addr[i].ip+":"+addr[i].port, grpc::InsecureChannelCredentials()),cqs[i],addr[i].ip+":"+addr[i].port+":"+std::to_string(i)));
+    }
+
+    // Spawn reader thread that loops indefinitely
+    for (auto i=0;i< client_num; ++i) {
+        threads.emplace_back(std::thread(&GreeterClient::AsyncCompleteRpc, clients[i]));
+    }
+    
+    for (int i = 0; i< client_num ; i++) {
+        // send more requests to each client
+        for(int j=0; j < req_num; ++j) {
+            clients[i]->SendData("Send data Req id = " + std::to_string(j) + " client id = " + addr[i].ip+":"+addr[i].port+":"+std::to_string(j));
+        }
+    }
+    std::cout << "Press control-c to quit" << std::endl << std::endl;
+    for (auto i=0;i< client_num; ++i) {
+        threads[i].join();
+    }
+#endif
     return 0;
 }
