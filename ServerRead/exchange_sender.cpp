@@ -20,6 +20,7 @@ using grpc::ClientAsyncWriter;
 using grpc::ClientContext;
 using grpc::CompletionQueue;
 using grpc::Status;
+using grpc::ChannelArguments;
 using namespace exchange;
 
 ReqChunk* GenChunk(int num) {
@@ -155,9 +156,12 @@ int main(int argc, char** argv) {
 
     CompletionQueue cq;
     std::vector<GreeterClient*> clients;
+    ChannelArguments args;
+    args.SetLoadBalancingPolicyName("round_robin");
+
     for (int i = 0; i< client_num; ++i) {
-        clients.emplace_back(new GreeterClient(grpc::CreateChannel(
-                addr[i].ip+":"+addr[i].port, grpc::InsecureChannelCredentials()),&cq,addr[i].ip+":"+addr[i].port+":"+std::to_string(i)));
+        clients.emplace_back(new GreeterClient(grpc::CreateCustomChannel(
+                addr[i].ip+":"+addr[i].port, grpc::InsecureChannelCredentials(),args),&cq,addr[i].ip+":"+addr[i].port+":"+std::to_string(i)));
     }
 
     // Spawn reader thread that loops indefinitely
