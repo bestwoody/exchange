@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
 
     // Spawn reader thread that loops indefinitely
     for (int i = 0; i < client_num; ++i) {
-        threads.emplace_back(std::thread(&GreeterClient::AsyncCompleteRpc, clients[0]));
+        threads.emplace_back(std::thread(&GreeterClient::AsyncCompleteRpc, clients[i]));
     }
 
     for (int i = 0; i < client_num; i++) {
