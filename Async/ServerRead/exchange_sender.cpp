@@ -10,7 +10,7 @@
 #include <thread>
 #include <stdlib.h>
 #include "exchange.grpc.pb.h"
-#include "../exchange.h"
+#include "../../exchange.h"
 
 using std::vector;
 using std::string;

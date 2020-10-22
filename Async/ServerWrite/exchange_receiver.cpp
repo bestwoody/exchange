@@ -6,7 +6,7 @@
 
 #include <grpcpp/grpcpp.h>
 #include <grpc/support/log.h>
-#include "../exchange.h"
+#include "../../exchange.h"
 #include "exchange.grpc.pb.h"
 
 using std::string;
@@ -107,9 +107,7 @@ private:
                 if (times_ == 0)
                 {
                     new CallData(service_, cq_);
-#ifdef DEBUG_
                     std::cout<< "request: "<< request_.name() << std::endl;
-#endif
                 }
 
                 if (times_++ >= LIMIT)

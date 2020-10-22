@@ -1,16 +1,13 @@
-//
-// Created by fangzhuhe on 2020/10/12.
-//
-
-
 #include <memory>
 #include <iostream>
 #include <string>
+#include <thread>
+#include <vector>
+
 #include <grpcpp/grpcpp.h>
 #include <grpc/support/log.h>
-#include <thread>
+#include "../../exchange.h"
 #include "exchange.grpc.pb.h"
-#include "../exchange.h"
 
 using std::string;
 using grpc::Server;
@@ -20,8 +17,25 @@ using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::ServerCompletionQueue;
 using grpc::Status;
-using namespace exchange;
+using exchange::ExchangeService;
+using exchange::ReqChunk;
+using exchange::Empty;
 using namespace std;
+
+ReqChunk* GenChunk(int num) {
+    if(num < 1) {
+        num = CHUNK_NUM;
+    }
+    ReqChunk* chk = new ReqChunk;
+    chk->set_num(num);
+    for(auto j=0; j< num; ++j) {
+        chk->add_id(j);
+        chk->add_name("abc");
+        chk->add_score(rand()*1.0);
+        chk->add_comment("abcaserfewqradf   adfawewerfasdgffasdfopi[15979841616dasfgdldkfgnvn k zsfgdzff454saf+89g165dvb");
+    }
+    return chk;
+}
 
 class ServerImpl final
 {
@@ -52,25 +66,25 @@ public:
             cqs_.emplace_back(builder.AddCompletionQueue());
         server_ = builder.BuildAndStart();
         std::cout << "Server listening on " << server_address << std::endl;
-
-        for(auto i=0;i< thread_num; ++i) {
-            works.emplace_back(thread(&ServerImpl::HandleRpcs, this,i));
+        for(auto i=0; i< thread_num;++i) {
+            works.emplace_back(thread(&ServerImpl::HandleRpcs, this, i));
         }
-        for(auto i=0;i<thread_num; ++i) {
+        for (int i = 0; i < thread_num; ++i) {
             works[i].join();
             std::cout <<"Server "<< i <<" is done!"<< std::endl;
         }
     }
 
 private:
+
     class CallData
     {
     public:
         CallData(ExchangeService::AsyncService* service, ServerCompletionQueue* cq)
                 : service_(service)
                 , cq_(cq)
-                , reader_(&ctx_)
-                , state_(CREATE)
+                , responder_(&ctx_)
+                , status_(CREATE)
                 , times_(0)
         {
             Proceed();
@@ -78,12 +92,13 @@ private:
 
         void Proceed()
         {
-            if (state_ == CREATE)
+            if (status_ == CREATE)
             {
-                service_->RequestExchangeData(&ctx_,  &reader_, cq_, cq_, this);
-                state_ = PROCESS;
+                status_ = PROCESS;
+                service_->RequestExchangeDataRet(&ctx_, &request_, &responder_, cq_, cq_, this);
+                this->chunk_ = GenChunk(0);
             }
-            else if (state_ == PROCESS)
+            else if (status_ == PROCESS)
             {
                 // Now that we go through this stage multiple times,
                 // we don't want to create a new instance every time.
@@ -92,38 +107,31 @@ private:
                 if (times_ == 0)
                 {
                     new CallData(service_, cq_);
-                    reader_.Read(&chunk_, this);
-                    times_++;
-                    return;
+                    std::cout<< "request: "<< request_.name() << std::endl;
                 }
-#ifdef DEBUG_
-                // process received chunks
-                cout<<"receive a chunk: "<< chunk_.chunk_id()<< endl;
-#else
-                if (chunk_.chunk_id() %MOD_LIMIT==0) {
-                    cout<<"receive a chunk: "<< chunk_.chunk_id()<< endl;
-                }
-#endif
-                if (times_>= LIMIT)
+
+                if (times_++ >= LIMIT)
                 {
-                    state_ = FINISH;
-                    reply_.set_received_chunks(times_);
-                    std::cout<<times_<<" read finish!!!"<< std::endl;
-                    reader_.Finish(reply_,Status::OK, this);
+                    status_ = FINISH;
+                    std::cout<< request_.name()  <<" write finished!!" <<std::endl;
+                    responder_.Finish(Status::OK, this);
                 }
                 else
                 {
-                    // read one more
-                    ++times_;
-                    reader_.Read(&chunk_, this);
+                    chunk_->set_chunk_id(times_);
+#ifdef DEBUG_
+                    std::cout<< request_.name() <<"  "<< times_ <<" write a chunk." <<std::endl;
+#else
+                    if (times_ % MOD_LIMIT == 0) {
+                        std::cout<< request_.name() <<"  "<< times_ <<" write a chunk." <<std::endl;
+                    }
+#endif
+                    responder_.Write(*chunk_, this);
                 }
             }
             else
             {
-#ifdef DEBUG_
-                std::cout<<"delete this!!!"<< std::endl;
-#endif
-                GPR_ASSERT(state_ == FINISH);
+                GPR_ASSERT(status_ == FINISH);
                 delete this;
             }
         }
@@ -132,20 +140,23 @@ private:
         ExchangeService::AsyncService* service_;
         ServerCompletionQueue* cq_;
         ServerContext ctx_;
-        ReqChunk chunk_;
-        ReplySummary reply_;
-        ServerAsyncReader<ReplySummary, ReqChunk> reader_;
+
+        Empty request_;
+        ReqChunk* chunk_;
+
+        ServerAsyncWriter<ReqChunk> responder_;
 
         int times_;
 
-        enum CallStates
+        enum CallStatus
         {
             CREATE,
             PROCESS,
             FINISH
         };
-        CallStates state_; // The current serving state.
+        CallStatus status_; // The current serving state.
     };
+
 
     void HandleRpcs(int id)
     {
@@ -160,10 +171,11 @@ private:
         }
     }
 
-    vector<std::unique_ptr<ServerCompletionQueue>> cqs_;
+    vector<std::unique_ptr<ServerCompletionQueue> > cqs_;
     ExchangeService::AsyncService service_;
     std::unique_ptr<Server> server_;
     vector<std::thread> works;
+
 };
 
 int main(int argc, char** argv)
