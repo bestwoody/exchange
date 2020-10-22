@@ -9,6 +9,7 @@
 #include <thread>
 #include "exchange.grpc.pb.h"
 #include "../../exchange.h"
+#include <grpcpp/resource_quota.h>
 
 using std::string;
 using grpc::Server;
@@ -56,6 +57,12 @@ void RunServer(string ip, string port, int client_num) {
     std::string server_address(ip+ ":"+port);
     ExchangeServiceImp service(client_num);
     ServerBuilder builder;
+
+    // set resource quota
+    grpc::ResourceQuota quota;
+    quota.SetMaxThreads(1);
+    builder.SetResourceQuota(quota);
+
     builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
     builder.RegisterService(&service);
     std::unique_ptr<Server> server(builder.BuildAndStart());
