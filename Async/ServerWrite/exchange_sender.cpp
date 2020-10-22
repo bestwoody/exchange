@@ -117,10 +117,6 @@ private:
     CompletionQueue* cq_;
     string client_id_;
 };
-struct ServerAddr{
-    string ip;
-    string port;
-}addr[100];
 
 int main(int argc, char** argv) {
     std::cout<<"./sender 'n servers' '1-th ip' '1-th port' ... 'req num'"<<std::endl;
