@@ -48,6 +48,8 @@ public:
         ServerBuilder builder;
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
         builder.RegisterService(&service_);
+        builder.SetMaxReceiveMessageSize(MSG_SIZE);
+        builder.SetMaxSendMessageSize(MSG_SIZE);
         for (int i = 0; i < thread_num; i++)
             cqs_.emplace_back(builder.AddCompletionQueue());
         server_ = builder.BuildAndStart();
