@@ -27,6 +27,7 @@ ReqChunk* GenChunk(int num) {
         num = CHUNK_NUM;
     }
     ReqChunk* chk = new ReqChunk;
+#if 0
     chk->set_num(num);
     for(auto j=0; j< num; ++j) {
         chk->add_id(j);
@@ -34,6 +35,10 @@ ReqChunk* GenChunk(int num) {
         chk->add_score(rand()*1.0);
         chk->add_comment("abcaserfewqradf   adfawewerfasdgffasdfopi[15979841616dasfgdldkfgnvn k zsfgdzff454saf+89g165dvb");
     }
+#else
+    char* dataChunk = new char[MSG_SIZE/2];
+    chk->add_comment(dataChunk);
+#endif
     return chk;
 }
 
