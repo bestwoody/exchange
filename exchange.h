@@ -12,10 +12,21 @@
 #define PER_MSG_SIZE 10*1024*1024
 
 #include <string>
+#include <grpcpp/grpcpp.h>
+#include <thread>
+#include <stdlib.h>
+#include "exchange.grpc.pb.h"
+using exchange::ReqChunk;
 struct ServerAddr{
     std::string ip;
     std::string port;
 }addr[100];
 
-
+ReqChunk* GenChunk(uint64_t size) {
+    ReqChunk* chk = new ReqChunk;
+    char* dataChunk = new char[PER_MSG_SIZE];
+    chk->set_data(dataChunk,PER_MSG_SIZE);
+    chk->set_size(PER_MSG_SIZE);
+    return chk;
+}
 #endif //EXCHANGE_EXCHANGE_H

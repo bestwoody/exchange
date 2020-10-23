@@ -35,8 +35,8 @@ else()
 endif()
 
 
-add_executable(receiver exchange_receiver.cpp ../../exchange.h exchange.grpc.pb.cc exchange.pb.cc)
-target_link_libraries(receiver ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${OPENSSL_LIBRARIES})
+add_executable(ASWreceiver exchange_receiver.cpp ../../exchange.h ../../exchange.grpc.pb.cc ../../exchange.pb.cc)
+target_link_libraries(ASWreceiver ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${OPENSSL_LIBRARIES})
 
-add_executable(sender exchange_sender.cpp ../../exchange.h exchange.grpc.pb.cc exchange.pb.cc)
-target_link_libraries(sender ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${OPENSSL_LIBRARIES})
+add_executable(ASWsender exchange_sender.cpp ../../exchange.h ../../exchange.grpc.pb.cc ../../exchange.pb.cc)
+target_link_libraries(ASWsender ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${OPENSSL_LIBRARIES})

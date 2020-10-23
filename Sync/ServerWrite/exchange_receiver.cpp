@@ -8,7 +8,7 @@
 #include <grpc/support/log.h>
 #include <thread>
 #include <condition_variable>
-#include "exchange.grpc.pb.h"
+#include "../../exchange.grpc.pb.h"
 #include "../../exchange.h"
 #include <grpcpp/resource_quota.h>
 
@@ -21,20 +21,7 @@ using grpc::ServerContext;
 using grpc::Status;
 using namespace exchange;
 using namespace std;
-ReqChunk* GenChunk(int num) {
-    if(num < 1) {
-        num = CHUNK_NUM;
-    }
-    ReqChunk* chk = new ReqChunk;
-    chk->set_num(num);
-    for(auto j=0; j< num; ++j) {
-        chk->add_id(j);
-        chk->add_name("abc");
-        chk->add_score(rand()*1.0);
-        chk->add_comment("abcaserfewqradf   adfawewerfasdgffasdfopi[15979841616dasfgdldkfgnvn k zsfgdzff454saf+89g165dvb");
-    }
-    return chk;
-}
+
 class ExchangeServiceImp final : public ExchangeService::Service {
 public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),receive_chunk_num(0), connected_clients_(0){
     chunk_ = GenChunk(0);

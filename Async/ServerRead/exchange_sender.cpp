@@ -9,7 +9,7 @@
 #include <grpcpp/grpcpp.h>
 #include <thread>
 #include <stdlib.h>
-#include "exchange.grpc.pb.h"
+#include "../../exchange.grpc.pb.h"
 #include "../../exchange.h"
 
 using std::vector;
@@ -22,14 +22,6 @@ using grpc::CompletionQueue;
 using grpc::Status;
 using namespace exchange;
 
-ReqChunk* GenChunk() {
-    ReqChunk* chk = new ReqChunk;
-    char* dataChunk = new char[PER_MSG_SIZE];
-    chk->set_data(dataChunk,PER_MSG_SIZE);
-    chk->set_size(PER_MSG_SIZE);
-    return chk;
-}
-
 class GreeterClient {
 public:
     explicit GreeterClient(std::shared_ptr<Channel> channel,CompletionQueue*cq, string id)
@@ -40,7 +32,7 @@ public:
     {
         // Call object to store rpc data
         AsyncClientCall* call = new AsyncClientCall;
-        call->request= GenChunk();
+        call->request= GenChunk(0);
         call->times= 0;
         call->writer = stub_->AsyncExchangeData(&call->context, &call->reply ,cq_,(void*)call);
         call->state_type = AsyncClientCall::CONNECTED;

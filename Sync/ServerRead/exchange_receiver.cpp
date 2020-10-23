@@ -8,8 +8,7 @@
 #include <string>
 #include <grpcpp/grpcpp.h>
 #include <grpc/support/log.h>
-#include <thread>
-#include "exchange.grpc.pb.h"
+#include "../../exchange.grpc.pb.h"
 #include "../../exchange.h"
 
 using std::string;

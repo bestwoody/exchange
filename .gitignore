@@ -9,3 +9,5 @@ exchange_receiver
 cmake-build-debug
 .idea
 build
+bin
+

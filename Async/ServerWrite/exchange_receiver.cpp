@@ -7,7 +7,7 @@
 #include <grpcpp/grpcpp.h>
 #include <grpc/support/log.h>
 #include "../../exchange.h"
-#include "exchange.grpc.pb.h"
+#include "../../exchange.grpc.pb.h"
 
 using std::string;
 using grpc::Server;
@@ -21,21 +21,6 @@ using exchange::ExchangeService;
 using exchange::ReqChunk;
 using exchange::Empty;
 using namespace std;
-
-ReqChunk* GenChunk(int num) {
-    if(num < 1) {
-        num = CHUNK_NUM;
-    }
-    ReqChunk* chk = new ReqChunk;
-    chk->set_num(num);
-    for(auto j=0; j< num; ++j) {
-        chk->add_id(j);
-        chk->add_name("abc");
-        chk->add_score(rand()*1.0);
-        chk->add_comment("abcaserfewqradf   adfawewerfasdgffasdfopi[15979841616dasfgdldkfgnvn k zsfgdzff454saf+89g165dvb");
-    }
-    return chk;
-}
 
 class ServerImpl final
 {
