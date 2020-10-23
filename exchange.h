@@ -9,6 +9,7 @@
 #define CHUNK_NUM 10240
 #define THREAD_NUM 4
 #define MSG_SIZE 40*1024*1024
+#define PER_MSG_SIZE 10*1024*1024
 
 #include <string>
 struct ServerAddr{

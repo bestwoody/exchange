@@ -22,23 +22,11 @@ using grpc::CompletionQueue;
 using grpc::Status;
 using namespace exchange;
 
-ReqChunk* GenChunk(int num) {
-    if(num < 1) {
-        num = CHUNK_NUM;
-    }
+ReqChunk* GenChunk() {
     ReqChunk* chk = new ReqChunk;
-#if 0
-    chk->set_num(num);
-    for(auto j=0; j< num; ++j) {
-        chk->add_id(j);
-        chk->add_name("abc");
-        chk->add_score(rand()*1.0);
-        chk->add_comment("abcaserfewqradf   adfawewerfasdgffasdfopi[15979841616dasfgdldkfgnvn k zsfgdzff454saf+89g165dvb");
-    }
-#else
-    char* dataChunk = new char[MSG_SIZE/2];
-    chk->add_comment(dataChunk);
-#endif
+    char* dataChunk = new char[PER_MSG_SIZE];
+    chk->set_data(dataChunk,PER_MSG_SIZE);
+    chk->set_size(PER_MSG_SIZE);
     return chk;
 }
 
@@ -52,7 +40,7 @@ public:
     {
         // Call object to store rpc data
         AsyncClientCall* call = new AsyncClientCall;
-        call->request= GenChunk(0);
+        call->request= GenChunk();
         call->times= 0;
         call->writer = stub_->AsyncExchangeData(&call->context, &call->reply ,cq_,(void*)call);
         call->state_type = AsyncClientCall::CONNECTED;

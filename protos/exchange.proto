@@ -23,11 +23,8 @@ message ReplySummary {
 
 // Chunk contains multiple rows data and rows meta.
 message ReqChunk {
-  repeated uint64 id = 1;
-  repeated string name=2;
-  repeated double score = 3;
-  repeated string comment = 4;
-  int32 num = 5;
-  uint64 chunk_id=6;
+  bytes data = 1;
+  uint64 size = 2;
+  uint64 chunk_id=3;
 }
 
