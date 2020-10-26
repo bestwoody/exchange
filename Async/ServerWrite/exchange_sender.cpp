@@ -136,8 +136,11 @@ int main(int argc, char** argv) {
         cqs.emplace_back(new CompletionQueue);
     }
     for (int i = 0; i< client_num; ++i) {
-        clients.emplace_back(new GreeterClient(grpc::CreateChannel(
-                addr[i].ip+":"+addr[i].port, grpc::InsecureChannelCredentials()),cqs[i],addr[i].ip+":"+addr[i].port+":"+std::to_string(i)));
+        grpc::ChannelArguments  channelArgs;
+        channelArgs.SetMaxReceiveMessageSize(MSG_SIZE);
+        channelArgs.SetMaxSendMessageSize(MSG_SIZE);
+        clients.emplace_back(new GreeterClient(grpc::CreateCustomChannel(
+                addr[i].ip+":"+addr[i].port, grpc::InsecureChannelCredentials(),channelArgs),cqs[i],addr[i].ip+":"+addr[i].port+":"+std::to_string(i)));
     }
 
 

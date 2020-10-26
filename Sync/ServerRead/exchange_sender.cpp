@@ -67,8 +67,11 @@ int main(int argc, char** argv) {
     vector<ExchangeClient*>clients;
     int req_num=atoi(argv[argc-1]);
     for (int i=0;i< client_num;++i) {
-        ExchangeClient* new_client =new ExchangeClient(grpc::CreateChannel(addr[i].ip+":"+addr[i].port,
-                                                                grpc::InsecureChannelCredentials()),i);
+        grpc::ChannelArguments  channelArgs;
+        channelArgs.SetMaxReceiveMessageSize(MSG_SIZE);
+        channelArgs.SetMaxSendMessageSize(MSG_SIZE);
+        ExchangeClient* new_client =new ExchangeClient(grpc::CreateCustomChannel(addr[i].ip+":"+addr[i].port,
+                                                                grpc::InsecureChannelCredentials(),channelArgs),i);
         clients.emplace_back(new_client);
         threads.emplace_back(thread(&ExchangeClient::SendData,new_client));
     }
