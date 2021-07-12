@@ -32,7 +32,7 @@ public:
     {
         // Call object to store rpc data
         AsyncClientCall* call = new AsyncClientCall;
-        call->request= GenChunk(0);
+        call->request= GenChunkList(call->chunk_list_size);
         call->times= 0;
         call->writer = stub_->AsyncExchangeData(&call->context, &call->reply ,cq_,(void*)call);
         call->state_type = AsyncClientCall::CONNECTED;
@@ -61,7 +61,7 @@ public:
             switch (call->state_type) {
                 case AsyncClientCall::CONNECTED: {
                     call->request->set_chunk_id(call->times);
-                    call->writer->Write(*call->request,(void*)call);
+                    call->writer->Write(*call->request[call->times % call->chunk_list_size],(void*)call);
                     call->state_type = AsyncClientCall::TOREAD;
 #ifdef DEBUG_
                     std::cout<< " send chunk id = "  << call->request->chunk_id() << std::endl;
@@ -74,7 +74,7 @@ public:
                         call->state_type = AsyncClientCall::DONE;
                     }else {
                         call->request->set_chunk_id(call->times);
-                        call->writer->Write(*call->request,(void*)call);
+                        call->writer->Write(*call->request[call->times % call->chunk_list_size],(void*)call);
 #ifdef DEBUG_
                         std::cout<< " send chunk id = "  << call->request->chunk_id() << std::endl;
 #else
@@ -99,7 +99,8 @@ private:
     struct AsyncClientCall {
         // Container for the data we expect from the server.
         ReplySummary reply;
-        ReqChunk* request;
+        ReqChunk** request;
+        int chunk_list_size=100;
         // Context for the client. It could be used to convey extra information to
         // the server and/or tweak certain RPC behaviors.
         ClientContext context;

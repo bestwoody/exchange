@@ -24,7 +24,7 @@ using namespace std;
 
 class ExchangeServiceImp final : public ExchangeService::Service {
 public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),receive_chunk_num(0), connected_clients_(0){
-    chunk_ = GenChunkList(chunk_list_size);
+    chunk_ = GenChunkList(chunk_list_size_);
         th = thread(&ExchangeServiceImp::SendData, this);
     }
     ~ExchangeServiceImp() {
@@ -58,7 +58,7 @@ public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),rece
         uint64_t send_times=0;
         while (true) {
             for(auto i= 0 ;i< connected_clients_;++i) {
-                writers[i]->Write(*chunk_[send_times%chunk_list_size]);
+                writers[i]->Write(*chunk_[send_times%chunk_list_size_]);
                 send_times++;
             }
             receive_chunk_num ++;
@@ -74,7 +74,7 @@ private:
     thread th;
     std::condition_variable cv, cv_finish;
     ReqChunk** chunk_;
-    int chunk_list_size=100;
+    int chunk_list_size_=100;
     int client_num_;
     std::atomic_int receive_chunk_num;
     vector<ServerWriter<ReqChunk>* > writers;

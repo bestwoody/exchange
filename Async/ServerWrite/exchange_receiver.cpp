@@ -83,7 +83,7 @@ private:
             {
                 status_ = PROCESS;
                 service_->RequestExchangeDataRet(&ctx_, &request_, &responder_, cq_, cq_, this);
-                this->chunk_ = GenChunk(0);
+                this->chunk_ = GenChunkList(chunk_list_size_);
             }
             else if (status_ == PROCESS)
             {
@@ -113,7 +113,7 @@ private:
                         std::cout<< request_.name() <<"  "<< times_ <<" write a chunk." <<std::endl;
                     }
 #endif
-                    responder_.Write(*chunk_, this);
+                    responder_.Write(*chunk_[times_%chunk_list_size_], this);
                 }
             }
             else
@@ -129,8 +129,8 @@ private:
         ServerContext ctx_;
 
         Empty request_;
-        ReqChunk* chunk_;
-
+        ReqChunk** chunk_;
+        int chunk_list_size_=100;
         ServerAsyncWriter<ReqChunk> responder_;
 
         int times_;

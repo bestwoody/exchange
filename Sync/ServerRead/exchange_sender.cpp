@@ -22,7 +22,7 @@ class ExchangeClient {
 public:
     ExchangeClient(std::shared_ptr<Channel> channel,int client_id)
     : stub_(ExchangeService::NewStub(channel)),client_id_(client_id) {
-        chunk_ = GenChunk(0);
+        chunk_ = GenChunkList(chunk_list_size_);
         chunk_num_ = 0;
     }
     void SendData() {
@@ -30,7 +30,7 @@ public:
         ReplySummary response;
         std::unique_ptr<ClientWriter<ReqChunk> > writer(stub_->ExchangeData(&context, &response));
         for(auto i=0; i< LIMIT; ++i) {
-            if(!writer->Write(*chunk_)){
+            if(!writer->Write(*chunk_[chunk_num_%chunk_list_size_])){
                 break;
             }
             chunk_num_++;
@@ -50,7 +50,8 @@ public:
 
 private:
     std::unique_ptr<ExchangeService::Stub> stub_;
-    ReqChunk* chunk_;
+    ReqChunk** chunk_;
+    int chunk_list_size_=100;
     atomic_int chunk_num_;
     int client_id_;
 };
