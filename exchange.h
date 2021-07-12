@@ -29,4 +29,16 @@ ReqChunk* GenChunk(uint64_t size) {
     chk->set_size(PER_MSG_SIZE);
     return chk;
 }
+
+ReqChunk* GenChunkList(uint64_t size) {
+  ReqChunk *chk_list = new ReqChunk[size];
+  for (auto i = 0; i < size; ++i) {
+    ReqChunk *chk = new ReqChunk;
+    char *dataChunk = new char[PER_MSG_SIZE];
+    chk->set_data(dataChunk, PER_MSG_SIZE);
+    chk->set_size(PER_MSG_SIZE);
+    chk_list[i] = chk;
+  }
+  return chk_list;
+}
 #endif //EXCHANGE_EXCHANGE_H
