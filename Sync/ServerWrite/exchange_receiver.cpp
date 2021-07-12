@@ -24,7 +24,7 @@ using namespace std;
 
 class ExchangeServiceImp final : public ExchangeService::Service {
 public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),receive_chunk_num(0), connected_clients_(0){
-    chunk_ = GenChunkList(100);
+    chunk_ = GenChunkList(chunk_list_size);
         th = thread(&ExchangeServiceImp::SendData, this);
     }
     ~ExchangeServiceImp() {
@@ -73,7 +73,7 @@ private:
     std::mutex mtx;
     thread th;
     std::condition_variable cv, cv_finish;
-    ReqChunk* chunk_[100];
+    ReqChunk** chunk_;
     int chunk_list_size=100;
     int client_num_;
     std::atomic_int receive_chunk_num;

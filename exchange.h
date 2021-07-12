@@ -30,8 +30,8 @@ ReqChunk* GenChunk(uint64_t size) {
     return chk;
 }
 
-ReqChunk* GenChunkList(uint64_t size) {
-  ReqChunk *chk_list = new ReqChunk[size];
+ReqChunk** GenChunkList(uint64_t size) {
+  ReqChunk **chk_list = new ReqChunk*[size];
   for (auto i = 0; i < size; ++i) {
     ReqChunk *chk = new ReqChunk;
     char *dataChunk = new char[PER_MSG_SIZE];
