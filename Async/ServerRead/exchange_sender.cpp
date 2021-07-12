@@ -104,7 +104,7 @@ private:
         ReplySummary reply;
         ReqChunk* request;
         ReqChunk** chunk_list;
-        int chunk_list_size;
+        int chunk_list_size=100;
         // Context for the client. It could be used to convey extra information to
         // the server and/or tweak certain RPC behaviors.
         ClientContext context;
