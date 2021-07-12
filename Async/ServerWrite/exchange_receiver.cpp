@@ -105,7 +105,8 @@ private:
                 }
                 else
                 {
-                    chunk_->set_chunk_id(times_);
+                    auto chunk = chunk_[times_%chunk_list_size_];
+                    chunk->set_chunk_id(times_);
 #ifdef DEBUG_
                     std::cout<< request_.name() <<"  "<< times_ <<" write a chunk." <<std::endl;
 #else
@@ -113,7 +114,7 @@ private:
                         std::cout<< request_.name() <<"  "<< times_ <<" write a chunk." <<std::endl;
                     }
 #endif
-                    responder_.Write(*chunk_[times_%chunk_list_size_], this);
+                    responder_.Write(*chunk, this);
                 }
             }
             else
