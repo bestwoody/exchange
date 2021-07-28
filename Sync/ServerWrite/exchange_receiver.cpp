@@ -43,7 +43,7 @@ public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),rece
     }*/
     Status ExchangeDataRet(ServerContext* context, const Empty* request, ServerWriter<ReqChunk>* writer) override {
         mtx.lock();
-        threads.emplace_back(thread(&ExchangeServiceImp::SendData,ServerWriter<ReqChunk>* writer, this));
+        threads.emplace_back(thread(&ExchangeServiceImp::SendData,writer, this));
         connected_clients_++;
         mtx.unlock();
 
