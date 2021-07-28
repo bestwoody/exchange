@@ -73,7 +73,7 @@ private:
     int chunk_list_size_=100;
     int client_num_;
     std::atomic_int receive_chunk_num;
-    atomic_int  connected_clients_=0;
+    atomic_int  connected_clients_;
 };
 void RunServer(string ip, string port, int client_num) {
     std::string server_address(ip+ ":"+port);
