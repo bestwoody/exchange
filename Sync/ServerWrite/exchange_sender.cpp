@@ -31,11 +31,22 @@ public:
       uint64_t recv_bytes = 0;
       std::unique_ptr<ClientReader<ReqChunk>> reader(
           stub_->ExchangeDataRet(&context, empty));
+//      while (1) {
+//        bool ret = reader->Read(chunks[chunk_num_ % MOD_LIMIT]);
+//        if (!ret)
+//          std::cout << "read failed" << endl;
+//        recv_bytes += chunks[chunk_num_ % MOD_LIMIT]->ByteSizeLong();
+//        if (chunk_num_ % MOD_LIMIT == 0) {
+//          cout << client_id_ << " client read chunks = " << chunk_num_
+//               << " size = " << recv_bytes << endl;
+//        }
+//        chunk_num_++;
+//      }
       while (1) {
-        bool ret = reader->Read(chunks[chunk_num_ % MOD_LIMIT]);
+        bool ret = reader->Read(&chunk_);
         if (!ret)
           std::cout << "read failed" << endl;
-        recv_bytes += chunks[chunk_num_ % MOD_LIMIT]->ByteSizeLong();
+        recv_bytes += chunk_.ByteSizeLong();
         if (chunk_num_ % MOD_LIMIT == 0) {
           cout << client_id_ << " client read chunks = " << chunk_num_
                << " size = " << recv_bytes << endl;
@@ -53,6 +64,7 @@ public:
 private:
     std::unique_ptr<ExchangeService::Stub> stub_;
     std::vector<ReqChunk*> chunks;
+    ReqChunk chunk_;
     atomic_int chunk_num_;
     int client_id_;
 };
