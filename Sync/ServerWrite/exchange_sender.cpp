@@ -4,6 +4,7 @@
 #include <grpcpp/grpcpp.h>
 #include <grpc/support/log.h>
 #include <thread>
+#include <vector>
 #include "../../exchange.grpc.pb.h"
 #include "../../exchange.h"
 using grpc::Channel;
@@ -20,16 +21,23 @@ public:
     ExchangeClient(std::shared_ptr<Channel> channel, int client_id)
             : stub_(ExchangeService::NewStub(channel)),client_id_(client_id) {
         chunk_num_ = 0;
+      for(auto i=0; i <= MOD_LIMIT; ++i)
+      {
+        chunks[i] = std::make_shared<ReqChunk>();
+      }
     }
     void SendData() {
         ClientContext context;
         Empty empty;
+        uint64_t recv_bytes=0;
+
         std::unique_ptr<ClientReader<ReqChunk> > reader(stub_->ExchangeDataRet(&context, empty));
-        while (reader->Read(&chunk_)){
-            chunk_num_++;
+        while (reader->Read(chunks[chunk_num_ % MOD_LIMIT].get())){
+          recv_bytes += chunks[chunk_num_ % MOD_LIMIT]->ByteSizeLong();
             if (chunk_num_ % MOD_LIMIT ==0 ) {
-                cout<<client_id_ <<" client read chunks = "<< chunk_num_<<endl;
+              cout<< client_id_ <<" client read chunks = "<< chunk_num_<<" size = "<< recv_bytes <<endl;
             }
+          chunk_num_++;
         }
         Status status = reader->Finish();
         if (status.ok()) {
@@ -41,7 +49,7 @@ public:
 
 private:
     std::unique_ptr<ExchangeService::Stub> stub_;
-    ReqChunk chunk_;
+    std::vector<std::shared_ptr<ReqChunk>> chunks;
     atomic_int chunk_num_;
     int client_id_;
 };

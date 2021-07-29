@@ -54,7 +54,7 @@ public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),rece
     void SendData(ServerWriter<ReqChunk>* writer) {
         uint64_t send_times=0;
         while (true) {
-            writer->Write(*chunk_[send_times%chunk_list_size_]);
+            writer->Write(*chunk_[abs(rand())%chunk_list_size_]);
             send_times++;
             receive_chunk_num ++;
             if(receive_chunk_num % MOD_LIMIT ==0) {
@@ -69,7 +69,7 @@ private:
     vector<thread> threads;
     std::condition_variable cv_finish;
     ReqChunk** chunk_;
-    int chunk_list_size_=100;
+    int chunk_list_size_=MOD_LIMIT;
     int client_num_;
     std::atomic_int receive_chunk_num;
     atomic_int  connected_clients_;
