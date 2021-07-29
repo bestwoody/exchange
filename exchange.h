@@ -43,6 +43,7 @@ ReqChunk** GenChunkList(uint64_t size) {
     chk->set_size(msg_size);
     chk_list[i] = chk;
   }
+  cout<<"generate chunk size= "<< size << std::endl;
   return chk_list;
 }
 #endif //EXCHANGE_EXCHANGE_H

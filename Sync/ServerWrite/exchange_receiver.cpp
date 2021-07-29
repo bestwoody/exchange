@@ -25,7 +25,7 @@ using namespace std;
 
 class ExchangeServiceImp final : public ExchangeService::Service {
 public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),receive_chunk_num(0), connected_clients_(0){
-    chunk_ = GenChunkList(chunk_list_size_);
+    chunk_ = GenChunkList(MOD_LIMIT);
     }
     ~ExchangeServiceImp() {
       for(int i=0;i< client_num_;++i) {
