@@ -28,13 +28,15 @@ public:
         {
           chunks.push_back(ReqChunk::New());
         }
+        uint64_t  recv_size=0;
         std::unique_ptr<ClientReader<ReqChunk> > reader(stub_->ExchangeDataRet(&context, empty));
         while (reader->Read(&chunk_)){
             chunk_num_++;
             if (chunk_num_ % MOD_LIMIT ==0 ) {
                 cout<<client_id_ <<" client read chunks = "<< chunk_num_<<"  "<< chunk_.ByteSizeLong() <<endl;
             }
-            chunks[chunk_ % MOD_LIMIT]->CopyFrom(chunk_);
+            recv_size += chunk_.ByteSizeLong();
+            chunks[chunk_num_%MOD_LIMIT]->CopyFrom(chunk_);
         }
         Status status = reader->Finish();
         if (status.ok()) {
