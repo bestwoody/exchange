@@ -26,7 +26,7 @@ public:
         Empty empty;
         for(auto i=0;i<MOD_LIMIT;++i)
         {
-          chunks.push_back(ReqChunk::New());
+          chunks.push_back(new ReqChunk());
         }
         uint64_t  recv_size=0;
         std::unique_ptr<ClientReader<ReqChunk> > reader(stub_->ExchangeDataRet(&context, empty));
