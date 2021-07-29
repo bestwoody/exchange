@@ -54,7 +54,10 @@ public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),rece
     void SendData(ServerWriter<ReqChunk>* writer) {
         uint64_t send_times=0;
         while (true) {
-            bool ret = writer->Write(*chunk_[abs(rand())%chunk_list_size_]);
+          auto id =abs(rand())%MOD_LIMIT;
+          auto ch = chunk_[id];
+          cout<< ch->ByteSizeLong() << " send id = "<< id << " times = " << send_times <<endl;
+            bool ret = writer->Write(*ch);
             if (!ret)
               cout<<"write failed"<<endl;
             send_times++;

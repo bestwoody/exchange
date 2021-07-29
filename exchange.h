@@ -37,9 +37,9 @@ ReqChunk** GenChunkList(uint64_t size) {
   for (auto i = 0; i < size; ++i) {
     ReqChunk *chk = new ReqChunk;
     msg_size = MSG_SIZE + PER_MSG_SIZE + std::abs(rand()) % MSG_SIZE;
-    char *dataChunk = (char*)malloc(msg_size+1);
-    memset(dataChunk,0,msg_size+1);
-    memset(dataChunk,1,msg_size-i);
+    char *dataChunk = (char*)malloc(msg_size);
+    memset(dataChunk,0,msg_size);
+    memset(dataChunk,1,msg_size-i-1);
     chk->set_data(dataChunk, msg_size);
     chk->set_size(msg_size);
     chk_list[i] = chk;
