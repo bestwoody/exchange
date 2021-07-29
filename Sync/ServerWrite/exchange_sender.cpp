@@ -28,7 +28,7 @@ public:
         while (reader->Read(&chunk_)){
             chunk_num_++;
             if (chunk_num_ % MOD_LIMIT ==0 ) {
-                cout<<client_id_ <<" client read chunks = "<< chunk_num_<<endl;
+                cout<<client_id_ <<" client read chunks = "<< chunk_num_<<"  "<< chunk_.ByteSizeLong() <<endl;
             }
         }
         Status status = reader->Finish();
