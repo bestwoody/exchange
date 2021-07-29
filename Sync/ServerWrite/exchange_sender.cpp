@@ -23,7 +23,7 @@ public:
         chunk_num_ = 0;
       for(auto i=0; i <= MOD_LIMIT; ++i)
       {
-        chunks[i] = std::make_shared<ReqChunk>();
+          chunks.push_back(std::make_shared<ReqChunk>());
       }
     }
     void SendData() {
