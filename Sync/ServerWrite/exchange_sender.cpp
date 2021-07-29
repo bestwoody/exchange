@@ -36,7 +36,7 @@ public:
               cout<<client_id_ <<" client read chunks = "<< chunk_num_<<"  "<< chunk_->ByteSizeLong() <<endl;
             }
           recv_size += chunk_->ByteSizeLong();
-          chunks[chunk_num_%MOD_LIMIT]->CopyFrom(*chunk_);
+          chunk_->Swap(chunks[chunk_num_%MOD_LIMIT]);
           chunk_num_++;
         }
         Status status = reader->Finish();
