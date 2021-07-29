@@ -28,15 +28,16 @@ public:
         {
           chunks.push_back(new ReqChunk());
         }
-        chunk_ = new ReqChunk();
+        //chunk_ = new ReqChunk();
         uint64_t  recv_size=0;
         std::unique_ptr<ClientReader<ReqChunk> > reader(stub_->ExchangeDataRet(&context, empty));
-        while (reader->Read(chunk_)){
+        while (reader->Read(chunks[chunk_num_%MOD_LIMIT])){
+          chunk_ = chunks[chunk_num_%MOD_LIMIT];
             if (chunk_num_ % MOD_LIMIT ==0 ) {
               cout<<client_id_ <<" client read chunks = "<< chunk_num_<<"  "<< chunk_->ByteSizeLong() <<endl;
             }
           recv_size += chunk_->ByteSizeLong();
-          chunk_->Swap(chunks[chunk_num_%MOD_LIMIT]);
+        //  chunk_->Swap(chunks[chunk_num_%MOD_LIMIT]);
           chunk_num_++;
         }
         Status status = reader->Finish();
