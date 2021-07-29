@@ -24,12 +24,17 @@ public:
     void SendData() {
         ClientContext context;
         Empty empty;
+        for(auto i=0;i<MOD_LIMIT;++i)
+        {
+          chunks.push_back(ReqChunk::New());
+        }
         std::unique_ptr<ClientReader<ReqChunk> > reader(stub_->ExchangeDataRet(&context, empty));
         while (reader->Read(&chunk_)){
             chunk_num_++;
             if (chunk_num_ % MOD_LIMIT ==0 ) {
                 cout<<client_id_ <<" client read chunks = "<< chunk_num_<<"  "<< chunk_.ByteSizeLong() <<endl;
             }
+            chunks[chunk_ % MOD_LIMIT]->CopyFrom(chunk_);
         }
         Status status = reader->Finish();
         if (status.ok()) {
@@ -42,6 +47,7 @@ public:
 private:
     std::unique_ptr<ExchangeService::Stub> stub_;
     ReqChunk chunk_;
+    std::vector<ReqChunk*> chunks;
     atomic_int chunk_num_;
     int client_id_;
 };
