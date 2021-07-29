@@ -21,28 +21,32 @@ public:
     ExchangeClient(std::shared_ptr<Channel> channel, int client_id)
             : stub_(ExchangeService::NewStub(channel)),client_id_(client_id) {
         chunk_num_ = 0;
-      for(auto i=0; i <= MOD_LIMIT; ++i)
-      {
-          chunks.push_back(new ReqChunk());
-      }
     }
     void SendData() {
-        ClientContext context;
-        Empty empty;
-        uint64_t recv_bytes=0;
-        std::unique_ptr<ClientReader<ReqChunk> > reader(stub_->ExchangeDataRet(&context, empty));
-        while (reader->Read(chunks[chunk_num_ % MOD_LIMIT])){
-          recv_bytes += chunks[chunk_num_ % MOD_LIMIT]->ByteSizeLong();
-            if (chunk_num_ % MOD_LIMIT ==0 ) {
-              cout<< client_id_ <<" client read chunks = "<< chunk_num_<<" size = "<< recv_bytes <<endl;
-            }
-          chunk_num_++;
+      ClientContext context;
+      Empty empty;
+      for (auto i = 0; i <= MOD_LIMIT; ++i) {
+        chunks.push_back(new ReqChunk());
+      }
+      uint64_t recv_bytes = 0;
+      std::unique_ptr<ClientReader<ReqChunk>> reader(
+          stub_->ExchangeDataRet(&context, empty));
+      while (1) {
+        bool ret = reader->Read(chunks[chunk_num_ % MOD_LIMIT]);
+        if (!ret)
+          std::cout << "read failed" << endl;
+        recv_bytes += chunks[chunk_num_ % MOD_LIMIT]->ByteSizeLong();
+        if (chunk_num_ % MOD_LIMIT == 0) {
+          cout << client_id_ << " client read chunks = " << chunk_num_
+               << " size = " << recv_bytes << endl;
         }
-        Status status = reader->Finish();
-        if (status.ok()) {
-            std::cout << "Send data rpc succeeded." << std::endl;
-        } else {
-            std::cout << "send Data rpc failed." << std::endl;
+        chunk_num_++;
+      }
+      Status status = reader->Finish();
+      if (status.ok()) {
+        std::cout << "Send data rpc succeeded." << std::endl;
+      } else {
+        std::cout << "send Data rpc failed." << std::endl;
         }
     }
 
