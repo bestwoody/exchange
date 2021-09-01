@@ -34,12 +34,13 @@ public:
         stub_->ExchangeDataRet(&context, empty));
     while (reader->Read(chunks[chunk_num_ % CHUNK_LIMIT])) {
       chunk_ = chunks[chunk_num_ % CHUNK_LIMIT];
+      out_chunk_->Clear();
       if (chunk_num_ % MOD_LIMIT == 0) {
         cout << client_id_ << " client read chunks = " << chunk_num_ << "  "
-             << chunk_->ByteSizeLong() << endl;
+             << chunk_->ByteSizeLong()<<" total size = "<< recv_size << endl;
       }
-      recv_size += chunk_->ByteSizeLong();
       out_chunk_->CopyFrom(*chunk_);
+      recv_size += out_chunk_->ByteSizeLong();
       chunk_num_++;
     }
     Status status = reader->Finish();
