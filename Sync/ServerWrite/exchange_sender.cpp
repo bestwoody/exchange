@@ -28,6 +28,7 @@ public:
     for (auto i = 0; i < CHUNK_LIMIT; ++i) {
       chunks.push_back(new ReqChunk());
     }
+    auto out_chunk_ = new ReqChunk();
     uint64_t recv_size = 0;
     std::unique_ptr<ClientReader<ReqChunk>> reader(
         stub_->ExchangeDataRet(&context, empty));
@@ -38,7 +39,7 @@ public:
              << chunk_->ByteSizeLong() << endl;
       }
       recv_size += chunk_->ByteSizeLong();
-      //  chunk_->Swap(chunks[chunk_num_%MOD_LIMIT]);
+      out_chunk_->CopyFrom(*chunk_);
       chunk_num_++;
     }
     Status status = reader->Finish();
