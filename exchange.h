@@ -55,7 +55,6 @@ ReqChunk** GenChunkList(uint64_t size) {
     // set data content
     memset(dataChunk,1,chunk_size);
     *(int*)dataChunk = chunk_size;
-    dataChunk[chunk_size-1] = '\0';
     chk->set_data(dataChunk);
     chk->set_size(chunk_size);
     chk_list[i] = chk;

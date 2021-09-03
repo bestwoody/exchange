@@ -38,10 +38,9 @@ public:
              << chunk_->ByteSizeLong()<<" total size = "<< recv_size << endl;
       }
       auto size = chunk_->data().size();
-      cout<<" receive chunk data size = "<< size <<" == ? "<< *(int*)(chunk_->data().c_str())<< endl;
       assert( size  ==  *(int*)(chunk_->data().c_str()));
       chunks[chunk_num_ % CHUNK_LIMIT]->CopyFrom(*chunk_);
-      recv_size += chunk_->data().size();
+      recv_size += size;
       chunk_num_++;
     }
     Status status = reader->Finish();
