@@ -57,12 +57,12 @@ ReqChunk** GenChunkList(uint64_t size) {
 #endif
     char *dataChunk = (char*)aligned_alloc(4,chunk_size);
     // set data content
-    memset(dataChunk,1,chunk_size);
+    memset(dataChunk,-1,chunk_size);
     *(int*)dataChunk = chunk_size;
     //dataChunk[chunk_size-1] = '\0';
     chk->set_data(dataChunk);
     chk->set_size(chunk_size);
-    //std::cout<<i<<" th data size "<<chunk_size<<" " <<*(int*)chk->data().c_str()<<std::endl;
+    std::cout<<i<<" th data size "<<chunk_size<<" " <<*(int*)chk->data().c_str()<<std::endl;
     chk_list[i] = chk;
   }
   return chk_list;
