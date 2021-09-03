@@ -62,7 +62,7 @@ ReqChunk** GenChunkList(uint64_t size) {
     dataChunk[chunk_size-1] = '\0';
     chk->set_data(dataChunk);
     chk->set_size(chunk_size);
-    std::cout<<i<<" th data size "<<chunk_size<<" " <<*(int*)chk->mutable_data()<<std::endl;
+    //std::cout<<i<<" th data size "<<chunk_size<<" " <<*(int*)chk->data().c_str()<<std::endl;
     chk_list[i] = chk;
   }
   return chk_list;
