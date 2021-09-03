@@ -37,7 +37,7 @@ public:
         cout << client_id_ << " client read chunks = " << chunk_num_ << "  "
              << chunk_->ByteSizeLong()<<" total size = "<< recv_size << endl;
       }
-      auto size = chunk_->data().size();
+      auto size = chunk_->data().size() + 1;
       assert( size  ==  *(int*)(chunk_->data().c_str()));
       chunks[chunk_num_ % CHUNK_LIMIT]->CopyFrom(*chunk_);
       recv_size += size;
