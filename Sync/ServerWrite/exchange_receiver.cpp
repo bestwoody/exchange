@@ -65,6 +65,7 @@ public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),rece
               if(send_times > 100)
                 break;
             }
+            cout<<send_times<<" th write size = "<< chunk_[send_times % chunk_list_size_]->size()<<" ==? "<< * (int*)chunk_[send_times % chunk_list_size_]->data().c_str()<<endl;
             send_times++;
             receive_chunk_num ++;
             if(receive_chunk_num % MOD_LIMIT ==0) {
