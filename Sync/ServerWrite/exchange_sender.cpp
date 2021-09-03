@@ -14,7 +14,7 @@ using grpc::ClientWriter;
 using grpc::Status;
 using namespace exchange;
 using namespace std;
-#define CHUNK_LIMIT 1000
+#define CHUNK_LIMIT 100
 
 class ExchangeClient {
 public:
@@ -37,8 +37,11 @@ public:
         cout << client_id_ << " client read chunks = " << chunk_num_ << "  "
              << chunk_->ByteSizeLong()<<" total size = "<< recv_size << endl;
       }
+      auto size = chunk_->data().size();
+      cout<<" receive chunk data size = "<< size <<" == ? "<< *(int*)(chunk_->data().c_str()+size-5)<< endl;
+      assert( size +1  ==  *(int*)(chunk_->data().c_str()+size-5));
       chunks[chunk_num_ % CHUNK_LIMIT]->CopyFrom(*chunk_);
-      recv_size += chunk_->ByteSizeLong();
+      recv_size += chunk_->data().size();
       chunk_num_++;
     }
     Status status = reader->Finish();
