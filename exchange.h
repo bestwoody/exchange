@@ -50,7 +50,11 @@ ReqChunk** GenChunkList(uint64_t size) {
   ReqChunk **chk_list = new ReqChunk*[size];
   for (auto i = 0; i < size; ++i) {
     ReqChunk *chk = new ReqChunk;
+#if 1
     auto chunk_size = randNum();
+#else
+    auto chunk_size = PER_MSG_SIZE;
+#endif
     char *dataChunk = (char*)malloc(chunk_size);
     // set data content
     memset(dataChunk,1,chunk_size);
@@ -58,6 +62,7 @@ ReqChunk** GenChunkList(uint64_t size) {
     dataChunk[chunk_size-1] = '\0';
     chk->set_data(dataChunk);
     chk->set_size(chunk_size);
+    std::cout<<i<<" th data size "<<chunk_size<<" " <<*(int*)chk->mutable_data()<<std::endl;
     chk_list[i] = chk;
   }
   return chk_list;
