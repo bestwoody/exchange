@@ -58,7 +58,7 @@ public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),rece
     void SendData(ServerWriter<ReqChunk>* writer) {
         uint64_t send_times=0;
         while (true) {
-            bool ret =  writer->Write(*chunk_[send_times%chunk_list_size_]);
+            bool ret =  writer->Write(*chunk_[send_times % chunk_list_size_]);
             if(!ret)
             {
               cout <<" write error";
