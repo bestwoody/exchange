@@ -32,7 +32,7 @@ public:
     uint64_t recv_size = 0;
     std::unique_ptr<ClientReader<ReqChunk>> reader(
         stub_->ExchangeDataRet(&context, empty));
-    while (reader->Read(*chunk_)) {
+    while (reader->Read(chunk_)) {
       if (chunk_num_ % MOD_LIMIT == 0) {
         cout << client_id_ << " client read chunks = " << chunk_num_ << "  "
              << chunk_->ByteSizeLong()<<" total size = "<< recv_size << endl;
