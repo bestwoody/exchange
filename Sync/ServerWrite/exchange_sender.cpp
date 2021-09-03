@@ -38,8 +38,10 @@ public:
              << chunk_->ByteSizeLong()<<" total size = "<< recv_size << endl;
       }
       auto size = chunk_->size();
-    //  cout<<"size = "<<size <<" == ? "<< *(int*)(chunk_->data().c_str())<<endl;
-      assert( size  ==  *(int*)(chunk_->data().c_str()));
+      if( size  !=  *(int*)(chunk_->data().c_str()))
+      {
+          cout<<"size = "<<size <<" != "<< *(int*)(chunk_->data().c_str())<<endl;
+      }
       chunks[chunk_num_ % CHUNK_LIMIT]->CopyFrom(*chunk_);
       recv_size += size;
       chunk_num_++;
