@@ -22,6 +22,12 @@ public:
       : stub_(ExchangeService::NewStub(channel)), client_id_(client_id) {
     chunk_num_ = 0;
   }
+  ~ExchangeClient(){
+      for (auto i = 0; i < CHUNK_LIMIT; ++i) {
+          delete chunks[i];
+      }
+      delete chunk_;
+  }
   void SendData() {
     ClientContext context;
     Empty empty;

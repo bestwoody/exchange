@@ -31,6 +31,10 @@ public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),rece
       for(int i=0;i< client_num_;++i) {
         threads[i].join();
       }
+      for(auto i=0; i< chunk_list_size_; ++i)
+      {
+          delete chunk_[i];
+      }
     }
 /*    Status ExchangeDataRet(ServerContext* context, const Empty* request, ServerWriter<ReqChunk>* writer) override {
         while (writer->Write(*chunk_)) {
