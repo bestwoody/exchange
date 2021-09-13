@@ -53,7 +53,7 @@ public: explicit ExchangeServiceImp():receive_chunk_num(0), connected_clients_(0
         // block for finish
 //        std::unique_lock<std::mutex> lck(mtx);
 //        cv_finish.wait(lck);
-        while(!stop_fg) sleep(1);
+//        while(!stop_fg) sleep(1);
         return Status::OK;
     }
     Status SendData(ServerWriter<ReqChunk>* writer) {
