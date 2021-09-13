@@ -31,12 +31,12 @@ ReqChunk* GenChunk(uint64_t size) {
     return chk;
 }
 
-ReqChunk** GenChunkList(uint64_t size) {
+ReqChunk** GenChunkList(uint64_t size, uint64_t msg_size = 0) {
   ReqChunk **chk_list = new ReqChunk*[size];
-  uint64_t msg_size = 0;
+//  uint64_t msg_size = 0;
   for (auto i = 0; i < size; ++i) {
     ReqChunk *chk = new ReqChunk;
-    msg_size = MSG_SIZE + PER_MSG_SIZE + std::abs(rand()) % MSG_SIZE;
+    if (msg_size == 0) msg_size = MSG_SIZE + PER_MSG_SIZE + std::abs(rand()) % MSG_SIZE;
     char *dataChunk = (char*)malloc(msg_size);
     memset(dataChunk,0,msg_size);
     memset(dataChunk,1,msg_size-i-1);

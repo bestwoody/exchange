@@ -85,7 +85,7 @@ private:
     std::atomic_int receive_chunk_num;
     atomic_int  connected_clients_;
 };
-void RunServer(string ip, string port, int numcqs, int minpollers,  int maxpollers) {
+void RunServer(string ip, string port, int msg_size, int numcqs, int minpollers,  int maxpollers) {
     std::string server_address(ip+ ":"+port);
     ExchangeServiceImp service;
     ServerBuilder builder;
@@ -110,7 +110,7 @@ void RunServer(string ip, string port, int numcqs, int minpollers,  int maxpolle
 
 int main(int argc, char** argv) {
 //    assert(argc == 4);
-    if (argc == 3) RunServer(argv[1],argv[2], 1, 1 ,2);
-    if (argc == 6) RunServer(argv[1],argv[2], atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
+    if (argc == 4) RunServer(argv[1],argv[2], atoi(argv[3]), 1, 1 ,2);
+    if (argc == 7) RunServer(argv[1],argv[2], atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), atoi(argv[6]));
     return 0;
 }
