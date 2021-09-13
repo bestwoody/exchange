@@ -60,12 +60,12 @@ public:
             }
             chunk_num_++;
         }
-        Status status = reader->Finish();
-        if (status.ok()) {
-            std::cout << "Send data rpc succeeded." << std::endl;
-        } else {
-            std::cout << "send Data rpc failed." << std::endl;
-        }
+//        Status status = reader->Finish();
+//        if (status.ok()) {
+//            std::cout << "Send data rpc succeeded." << std::endl;
+//        } else {
+//            std::cout << "send Data rpc failed." << std::endl;
+//        }
     }
 
 private:
