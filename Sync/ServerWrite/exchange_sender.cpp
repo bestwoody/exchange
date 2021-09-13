@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
     std::cout<<"./sender 'n servers' '1-th ip' '1-th port' ... 'req num'"<<std::endl;
     assert(argc>2);
     int client_num=atoi(argv[1]);
-    assert(2*client_num+3==argc);
+//    assert(2*client_num+3==argc);
 //    for(int i=0; i<client_num; ++i) {
         addr[0].ip = argv[2];
         addr[0].port = argv[3];
