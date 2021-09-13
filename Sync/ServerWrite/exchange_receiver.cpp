@@ -139,7 +139,11 @@ void RunServer(string ip, string port, int msg_size, int numcqs, int minpollers,
 
 int main(int argc, char** argv) {
 //    assert(argc == 4);
-    if (argc == 4) RunServer(argv[1],argv[2], atoi(argv[3]), 1, 1 ,2);
-    if (argc == 7) RunServer(argv[1],argv[2], atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), atoi(argv[6]));
+    int server_cnt = atoi(argv[1]);
+    for(int i=0;i<server_cnt;i++) {
+        int port = i+ atoi(argv[2]);
+        if (argc == 4) RunServer("0.0.0.0", std::to_string(port), atoi(argv[3]), 1, 1, 2);
+        if (argc == 7) RunServer("0.0.0.0", std::to_string(port), atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), atoi(argv[6]));
+    }
     return 0;
 }
