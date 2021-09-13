@@ -45,6 +45,11 @@ public: explicit ExchangeServiceImp(int msg_size = 0):receive_chunk_num(0), conn
         }
         return Status::OK;
     }*/
+
+    virtual ::grpc::Status ExchangeDataOnce(::grpc::ServerContext* context, const ::exchange::Empty* request, ::exchange::ReqChunk* response) override {
+        SendDatam(response);
+        return grpc::Status::OK;
+    }
     Status ExchangeDataRet(ServerContext* context, const Empty* request, ServerWriter<ReqChunk>* writer) override {
 //        mtx.lock();
         connected_clients_++;
@@ -58,6 +63,25 @@ public: explicit ExchangeServiceImp(int msg_size = 0):receive_chunk_num(0), conn
 //        writer->WriteDone
         return Status::OK;
     }
+    void SendDatam(::exchange::ReqChunk* response) {
+        auto id =receive_chunk_num%CHUNK_CAP;
+        if (id < 0) id+=CHUNK_CAP;
+
+        auto ch = chunk_[id];
+        response->CopyFrom(*ch);
+//          cout<< ch->ByteSizeLong() << " send id = "<< id << " times = " << send_times <<endl;
+//        bool ret = writer->Write(*ch);
+//        if (!ret) {
+//            cout<<"write failed"<<endl;
+//            break;
+//        }
+//        send_times++;
+//        receive_chunk_num ++;
+//        if(receive_chunk_num % MOD_LIMIT ==0) {
+//            cout << "exchange write chunks = "<< receive_chunk_num<<endl;
+//        }
+    }
+
     void SendData(ServerWriter<ReqChunk>* writer) {
         uint64_t send_times=0;
         while (true) {

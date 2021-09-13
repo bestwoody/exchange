@@ -10,6 +10,7 @@ package exchange;
 service ExchangeService {
   rpc ExchangeData(stream ReqChunk) returns (ReplySummary) {}
   rpc ExchangeDataRet(Empty) returns (stream ReqChunk) {}
+  rpc ExchangeDataOnce(Empty) returns (ReqChunk) {}
 }
 
 message Empty{

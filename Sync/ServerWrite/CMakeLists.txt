@@ -40,3 +40,5 @@ target_link_libraries(SSWreceiver ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIB
 
 add_executable(SSWsender exchange_sender.cpp ../../exchange.h ../../exchange.grpc.pb.cc ../../exchange.pb.cc)
 target_link_libraries(SSWsender ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${OPENSSL_LIBRARIES})
+add_executable(SSWsender2 exchange_sender2.cpp ../../exchange.h ../../exchange.grpc.pb.cc ../../exchange.pb.cc)
+target_link_libraries(SSWsender2 ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${OPENSSL_LIBRARIES})

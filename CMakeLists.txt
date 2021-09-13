@@ -5,7 +5,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # 添加子目录
 add_subdirectory(Sync)
-add_subdirectory(Async)
+#add_subdirectory(Async)
 
 set(PROTOS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/protos)
 

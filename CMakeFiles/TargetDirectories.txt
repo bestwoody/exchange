@@ -1,0 +1,12 @@
+/Users/woody/Desktop/exchange/CMakeFiles/rebuild_cache.dir
+/Users/woody/Desktop/exchange/CMakeFiles/edit_cache.dir
+/Users/woody/Desktop/exchange/Sync/CMakeFiles/rebuild_cache.dir
+/Users/woody/Desktop/exchange/Sync/CMakeFiles/edit_cache.dir
+/Users/woody/Desktop/exchange/Sync/ServerRead/CMakeFiles/rebuild_cache.dir
+/Users/woody/Desktop/exchange/Sync/ServerRead/CMakeFiles/edit_cache.dir
+/Users/woody/Desktop/exchange/Sync/ServerRead/CMakeFiles/SSRsender.dir
+/Users/woody/Desktop/exchange/Sync/ServerRead/CMakeFiles/SSRreceiver.dir
+/Users/woody/Desktop/exchange/Sync/ServerWrite/CMakeFiles/rebuild_cache.dir
+/Users/woody/Desktop/exchange/Sync/ServerWrite/CMakeFiles/edit_cache.dir
+/Users/woody/Desktop/exchange/Sync/ServerWrite/CMakeFiles/SSWsender.dir
+/Users/woody/Desktop/exchange/Sync/ServerWrite/CMakeFiles/SSWreceiver.dir
