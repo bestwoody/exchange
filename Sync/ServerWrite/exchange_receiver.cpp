@@ -85,7 +85,7 @@ private:
     std::atomic_int receive_chunk_num;
     atomic_int  connected_clients_;
 };
-void RunServer(string ip, string port) {
+void RunServer(string ip, string port, int numcqs, int minpollers,  int maxpollers) {
     std::string server_address(ip+ ":"+port);
     ExchangeServiceImp service;
     ServerBuilder builder;
@@ -99,6 +99,9 @@ void RunServer(string ip, string port) {
     builder.RegisterService(&service);
     builder.SetMaxReceiveMessageSize(-1);
     builder.SetMaxSendMessageSize(-1);
+    builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::NUM_CQS, numcqs);
+    builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MIN_POLLERS, minpollers);
+    builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, maxpollers);
     std::unique_ptr<Server> server(builder.BuildAndStart());
 
     std::cout << "Server listening on " << server_address << std::endl;
@@ -107,6 +110,7 @@ void RunServer(string ip, string port) {
 
 int main(int argc, char** argv) {
 //    assert(argc == 4);
-    RunServer(argv[1],argv[2]);
+    if (argc == 3) RunServer(argv[1],argv[2], 1, 1 ,2);
+    if (argc == 6) RunServer(argv[1],argv[2], atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
     return 0;
 }
