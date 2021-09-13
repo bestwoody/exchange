@@ -9,6 +9,8 @@
 #include <thread>
 #include <vector>
 #include <condition_variable>
+#include <cstdlib>
+#include "unistd.h"
 #include "../../exchange.grpc.pb.h"
 #include "../../exchange.h"
 #include <grpcpp/resource_quota.h>
@@ -26,11 +28,13 @@ using namespace std;
 class ExchangeServiceImp final : public ExchangeService::Service {
 public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),receive_chunk_num(0), connected_clients_(0){
     chunk_ = GenChunkList(MOD_LIMIT);
+        stop_fg= 0;
     }
     ~ExchangeServiceImp() {
-      for(int i=0;i< client_num_;++i) {
-        threads[i].join();
-      }
+        stop_fg = 1;
+//      for(int i=0;i< client_num_;++i) {
+//        threads[i].join();
+//      }
     }
 /*    Status ExchangeDataRet(ServerContext* context, const Empty* request, ServerWriter<ReqChunk>* writer) override {
         while (writer->Write(*chunk_)) {
@@ -42,16 +46,17 @@ public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),rece
         return Status::OK;
     }*/
     Status ExchangeDataRet(ServerContext* context, const Empty* request, ServerWriter<ReqChunk>* writer) override {
-        mtx.lock();
+//        mtx.lock();
         connected_clients_++;
-        mtx.unlock();
+//        mtx.unlock();
         SendData(writer);
         // block for finish
-        std::unique_lock<std::mutex> lck(mtx);
-        cv_finish.wait(lck);
+//        std::unique_lock<std::mutex> lck(mtx);
+//        cv_finish.wait(lck);
+        while(!stop_fg) sleep(1);
         return Status::OK;
     }
-    void SendData(ServerWriter<ReqChunk>* writer) {
+    Status SendData(ServerWriter<ReqChunk>* writer) {
         uint64_t send_times=0;
         while (true) {
           auto id =abs(rand())%MOD_LIMIT;
@@ -70,6 +75,7 @@ public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),rece
     }
 
 private:
+    std::atomic_int stop_fg;
     std::mutex mtx;
     vector<thread> threads;
     std::condition_variable cv_finish;
