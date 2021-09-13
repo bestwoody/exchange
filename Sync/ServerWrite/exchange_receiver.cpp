@@ -64,7 +64,7 @@ public: explicit ExchangeServiceImp(int msg_size = 0):receive_chunk_num(0), conn
           auto id =receive_chunk_num%CHUNK_CAP;
           if (id < 0) id+=CHUNK_CAP;
           auto ch = chunk_[id];
-          cout<< ch->ByteSizeLong() << " send id = "<< id << " times = " << send_times <<endl;
+//          cout<< ch->ByteSizeLong() << " send id = "<< id << " times = " << send_times <<endl;
             bool ret = writer->Write(*ch);
             if (!ret) {
                 cout<<"write failed"<<endl;
