@@ -26,7 +26,7 @@ using namespace exchange;
 using namespace std;
 
 class ExchangeServiceImp final : public ExchangeService::Service {
-public: explicit ExchangeServiceImp(int client_num):client_num_(client_num),receive_chunk_num(0), connected_clients_(0){
+public: explicit ExchangeServiceImp():receive_chunk_num(0), connected_clients_(0){
     chunk_ = GenChunkList(MOD_LIMIT);
         stop_fg= 0;
     }
@@ -81,13 +81,13 @@ private:
     std::condition_variable cv_finish;
     ReqChunk** chunk_;
     int chunk_list_size_=MOD_LIMIT;
-    int client_num_;
+//    int client_num_;
     std::atomic_int receive_chunk_num;
     atomic_int  connected_clients_;
 };
-void RunServer(string ip, string port, int client_num) {
+void RunServer(string ip, string port) {
     std::string server_address(ip+ ":"+port);
-    ExchangeServiceImp service(client_num);
+    ExchangeServiceImp service;
     ServerBuilder builder;
 
     // set resource quota
@@ -97,8 +97,8 @@ void RunServer(string ip, string port, int client_num) {
 
     builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
     builder.RegisterService(&service);
-    builder.SetMaxReceiveMessageSize(MSG_SIZE);
-    builder.SetMaxSendMessageSize(MSG_SIZE);
+    builder.SetMaxReceiveMessageSize(-1);
+    builder.SetMaxSendMessageSize(-1);
     std::unique_ptr<Server> server(builder.BuildAndStart());
 
     std::cout << "Server listening on " << server_address << std::endl;
@@ -106,7 +106,7 @@ void RunServer(string ip, string port, int client_num) {
 }
 
 int main(int argc, char** argv) {
-    assert(argc == 4);
-    RunServer(argv[1],argv[2],atoi(argv[3]));
+//    assert(argc == 4);
+    RunServer(argv[1],argv[2]);
     return 0;
 }

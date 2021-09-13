@@ -75,18 +75,18 @@ int main(int argc, char** argv) {
     assert(argc>2);
     int client_num=atoi(argv[1]);
     assert(2*client_num+3==argc);
-    for(int i=0; i<client_num; ++i) {
-        addr[i].ip = argv[2*i+2];
-        addr[i].port = argv[2*i+3];
-    }
+//    for(int i=0; i<client_num; ++i) {
+        addr[0].ip = argv[2];
+        addr[0].port = argv[3];
+//    }
     vector<thread>threads;
     vector<ExchangeClient*>clients;
-    int req_num=atoi(argv[argc-1]);
+//    int req_num=atoi(argv[argc-1]);
     for (int i=0;i< client_num;++i) {
         grpc::ChannelArguments  channelArgs;
-        channelArgs.SetMaxReceiveMessageSize(MSG_SIZE);
-        channelArgs.SetMaxSendMessageSize(MSG_SIZE);
-        ExchangeClient* new_client =new ExchangeClient(grpc::CreateCustomChannel(addr[i].ip+":"+addr[i].port,
+        channelArgs.SetMaxReceiveMessageSize(-1);
+        channelArgs.SetMaxSendMessageSize(-1);
+        ExchangeClient* new_client =new ExchangeClient(grpc::CreateCustomChannel(addr[0].ip+":"+addr[0].port,
                                               grpc::InsecureChannelCredentials(),channelArgs),i);
         clients.emplace_back(new_client);
         threads.emplace_back(thread(&ExchangeClient::SendData,new_client));
