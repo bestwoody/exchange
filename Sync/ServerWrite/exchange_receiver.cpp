@@ -27,11 +27,11 @@ using namespace std;
 
 class ExchangeServiceImp final : public ExchangeService::Service {
 public: explicit ExchangeServiceImp():receive_chunk_num(0), connected_clients_(0){
-    chunk_ = GenChunkList(MOD_LIMIT);
-        stop_fg= 0;
+    chunk_ = GenChunkList(CHUNK_CAP);
+//        stop_fg= 0;
     }
     ~ExchangeServiceImp() {
-        stop_fg = 1;
+//        stop_fg = 1;
 //      for(int i=0;i< client_num_;++i) {
 //        threads[i].join();
 //      }
@@ -54,12 +54,15 @@ public: explicit ExchangeServiceImp():receive_chunk_num(0), connected_clients_(0
 //        std::unique_lock<std::mutex> lck(mtx);
 //        cv_finish.wait(lck);
 //        while(!stop_fg) sleep(1);
+        connected_clients_--;
+//        writer->WriteDone
         return Status::OK;
     }
-    Status SendData(ServerWriter<ReqChunk>* writer) {
+    void SendData(ServerWriter<ReqChunk>* writer) {
         uint64_t send_times=0;
         while (true) {
-          auto id =abs(rand())%MOD_LIMIT;
+          auto id =receive_chunk_num%CHUNK_CAP;
+          if (id < 0) id+=CHUNK_CAP;
           auto ch = chunk_[id];
           cout<< ch->ByteSizeLong() << " send id = "<< id << " times = " << send_times <<endl;
             bool ret = writer->Write(*ch);
@@ -77,12 +80,12 @@ public: explicit ExchangeServiceImp():receive_chunk_num(0), connected_clients_(0
     }
 
 private:
-    std::atomic_int stop_fg;
-    std::mutex mtx;
-    vector<thread> threads;
-    std::condition_variable cv_finish;
+//    std::atomic_int stop_fg;
+//    std::mutex mtx;
+//    vector<thread> threads;
+//    std::condition_variable cv_finish;
     ReqChunk** chunk_;
-    int chunk_list_size_=MOD_LIMIT;
+//    int chunk_list_size_=MOD_LIMIT;
 //    int client_num_;
     std::atomic_int receive_chunk_num;
     atomic_int  connected_clients_;
