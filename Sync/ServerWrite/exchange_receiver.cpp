@@ -26,8 +26,8 @@ using namespace exchange;
 using namespace std;
 
 class ExchangeServiceImp final : public ExchangeService::Service {
-public: explicit ExchangeServiceImp():receive_chunk_num(0), connected_clients_(0){
-    chunk_ = GenChunkList(CHUNK_CAP);
+public: explicit ExchangeServiceImp(int msg_size = 0):receive_chunk_num(0), connected_clients_(0){
+    chunk_ = GenChunkList(CHUNK_CAP, msg_size);
 //        stop_fg= 0;
     }
     ~ExchangeServiceImp() {
@@ -92,7 +92,7 @@ private:
 };
 void RunServer(string ip, string port, int msg_size, int numcqs, int minpollers,  int maxpollers) {
     std::string server_address(ip+ ":"+port);
-    ExchangeServiceImp service;
+    ExchangeServiceImp service(msg_size);
     ServerBuilder builder;
 
     // set resource quota
