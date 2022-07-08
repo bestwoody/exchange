@@ -22,7 +22,7 @@ public:
             : stub_(ExchangeService::NewStub(channel)),client_id_(client_id) {
         chunk_num_ = 0;
     }
-    void SendData() {
+    void SendData0() {
       ClientContext context;
       Empty empty;
       for (auto i = 0; i <= MOD_LIMIT; ++i) {
@@ -42,10 +42,19 @@ public:
 //        }
 //        chunk_num_++;
 //      }
+      int cnt = 0;
       while (1) {
         bool ret = reader->Read(&chunk_);
-        if (!ret)
-          std::cout << "read failed" << endl;
+        if (!ret) {
+          if (cnt == 0) {
+            std::cout << "read failed" << endl;
+          }
+          else {
+            std::cout << "read done:"<<cnt << endl;
+          }
+          break;
+        }
+        cnt++;
         recv_bytes += chunk_.ByteSizeLong();
         if (chunk_num_ % MOD_LIMIT == 0) {
           cout << client_id_ << " client read chunks = " << chunk_num_
@@ -59,6 +68,12 @@ public:
       } else {
         std::cout << "send Data rpc failed." << std::endl;
         }
+    }
+
+    void SendData() {
+      while(true) {
+        SendData0();
+      }
     }
 
 private:
@@ -84,8 +99,8 @@ int main(int argc, char** argv) {
     int req_num=atoi(argv[argc-1]);
     for (int i=0;i< client_num;++i) {
         grpc::ChannelArguments  channelArgs;
-        channelArgs.SetMaxReceiveMessageSize(MSG_SIZE);
-        channelArgs.SetMaxSendMessageSize(MSG_SIZE);
+        channelArgs.SetMaxReceiveMessageSize(-1);
+        channelArgs.SetMaxSendMessageSize(-1);
         ExchangeClient* new_client =new ExchangeClient(grpc::CreateCustomChannel(addr[i].ip+":"+addr[i].port,
                                               grpc::InsecureChannelCredentials(),channelArgs),i);
         clients.emplace_back(new_client);

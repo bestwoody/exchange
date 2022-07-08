@@ -69,8 +69,8 @@ int main(int argc, char** argv) {
     int req_num=atoi(argv[argc-1]);
     for (int i=0;i< client_num;++i) {
         grpc::ChannelArguments  channelArgs;
-        channelArgs.SetMaxReceiveMessageSize(MSG_SIZE);
-        channelArgs.SetMaxSendMessageSize(MSG_SIZE);
+        channelArgs.SetMaxReceiveMessageSize(-1);
+        channelArgs.SetMaxSendMessageSize(-1);
         ExchangeClient* new_client =new ExchangeClient(grpc::CreateCustomChannel(addr[i].ip+":"+addr[i].port,
                                                                 grpc::InsecureChannelCredentials(),channelArgs),i);
         clients.emplace_back(new_client);

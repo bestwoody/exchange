@@ -174,8 +174,8 @@ int main(int argc, char** argv) {
     std::vector<GreeterClient*> clients;
     for (int i = 0; i< client_num; ++i) {
         grpc::ChannelArguments  channelArgs;
-        channelArgs.SetMaxReceiveMessageSize(MSG_SIZE);
-        channelArgs.SetMaxSendMessageSize(MSG_SIZE);
+        channelArgs.SetMaxReceiveMessageSize(-1);
+        channelArgs.SetMaxSendMessageSize(-1);
         clients.emplace_back(new GreeterClient(grpc::CreateCustomChannel(
                     addr[i].ip+":"+addr[i].port, grpc::InsecureChannelCredentials(),channelArgs),cqs[i],addr[i].ip+":"+addr[i].port+":"+std::to_string(i)));
     }

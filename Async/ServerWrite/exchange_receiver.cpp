@@ -47,8 +47,8 @@ public:
         ServerBuilder builder;
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
         builder.RegisterService(&service_);
-        builder.SetMaxReceiveMessageSize(MSG_SIZE);
-        builder.SetMaxSendMessageSize(MSG_SIZE);
+        builder.SetMaxReceiveMessageSize(-1);
+        builder.SetMaxSendMessageSize(-1);
         for (int i = 0; i < thread_num; i++)
             cqs_.emplace_back(builder.AddCompletionQueue());
         server_ = builder.BuildAndStart();
@@ -97,7 +97,7 @@ private:
                     std::cout<< "request: "<< request_.name() << std::endl;
                 }
 
-                if (times_++ >= LIMIT)
+                if (times_++ >= 5)
                 {
                     status_ = FINISH;
                     std::cout<< request_.name()  <<" write finished!!" <<std::endl;
@@ -107,13 +107,13 @@ private:
                 {
                     auto chunk = chunk_[times_%chunk_list_size_];
                     chunk->set_chunk_id(times_);
-#ifdef DEBUG_
-                    std::cout<< request_.name() <<"  "<< times_ <<" write a chunk." <<std::endl;
-#else
+// #ifdef DEBUG_
+                    std::cout<< request_.name() <<"  times:"<< times_ <<" write a chunk." <<std::endl;
+// #else
                     if (times_ % MOD_LIMIT == 0) {
-                        std::cout<< request_.name() <<"  "<< times_ <<" write a chunk." <<std::endl;
+                        std::cout<< request_.name() <<"  times:"<< times_ <<" write a chunk." <<std::endl;
                     }
-#endif
+// #endif
                     responder_.Write(*chunk, this);
                 }
             }
@@ -154,8 +154,13 @@ private:
         while (true)
         {
             GPR_ASSERT(cqs_[id]->Next(&tag, &ok));
-            GPR_ASSERT(ok);
-            static_cast<CallData*>(tag)->Proceed();
+            
+            if (ok) {
+                static_cast<CallData*>(tag)->Proceed();
+            } else {
+                std::cout<<"ok:"<<ok<<std::endl;
+
+            }
         }
     }
 
