@@ -83,7 +83,7 @@ private:
             {
                 status_ = PROCESS;
                 service_->RequestExchangeDataRet(&ctx_, &request_, &responder_, cq_, cq_, this);
-                this->chunk_ = GenChunkList(chunk_list_size_);
+//                this->chunk_ = GenChunkList(chunk_list_size_);
             }
             else if (status_ == PROCESS)
             {
@@ -105,8 +105,8 @@ private:
                 }
                 else
                 {
-                    auto chunk = chunk_[times_%chunk_list_size_];
-                    chunk->set_chunk_id(times_);
+                    ReqChunk chunk;
+                    chunk.set_chunk_id(times_);
 // #ifdef DEBUG_
                     std::cout<< request_.name() <<"  times:"<< times_ <<" write a chunk." <<std::endl;
 // #else
@@ -114,7 +114,7 @@ private:
                         std::cout<< request_.name() <<"  times:"<< times_ <<" write a chunk." <<std::endl;
                     }
 // #endif
-                    responder_.Write(*chunk, this);
+                    responder_.Write(chunk, this);
                 }
             }
             else
